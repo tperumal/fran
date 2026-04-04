@@ -65,19 +65,20 @@ export default function useMood() {
     fetchMoods()
   }, [fetchMoods])
 
+  const [moodError, setMoodError] = useState(null)
+
   const logMood = useCallback(async (mood) => {
     if (!isOnline) return
+    setMoodError(null)
 
-    const { error } = await supabase
-      .from('mood_logs')
-      .insert({
-        profile_id: user.id,
-        household_id: householdId || null,
-        mood,
-      })
+    const row = { profile_id: user.id, mood }
+    if (householdId) row.household_id = householdId
+
+    const { error } = await supabase.from('mood_logs').insert(row)
 
     if (error) {
       console.error('[FRAN] Error logging mood:', error.message)
+      setMoodError(error.message)
       return
     }
 
@@ -112,5 +113,5 @@ export default function useMood() {
     historyStrip.push(entry ? entry.mood : null)
   }
 
-  return { myMood, partnerMoods, historyStrip, logMood, loading }
+  return { myMood, partnerMoods, historyStrip, logMood, loading, moodError }
 }

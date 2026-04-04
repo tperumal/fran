@@ -104,7 +104,7 @@ function useWeather() {
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { myMood, partnerMoods, historyStrip, logMood, loading: moodLoading } = useMood()
+  const { myMood, partnerMoods, historyStrip, logMood, loading: moodLoading, moodError } = useMood()
   const { weather, error: weatherError, loading: weatherLoading, retry: retryWeather } = useWeather()
   const [data, setData] = useState({ workouts: [], tasks: [], bills: [], mealPlan: null, media: [], groceryItems: [], milestones: [], weekendActivities: [] })
 
@@ -211,6 +211,11 @@ export default function Dashboard() {
               </button>
             ))}
           </div>
+          {moodError && (
+            <div className="dash-mood-status" style={{ color: 'var(--danger)' }}>
+              <span>ERROR: {moodError}</span>
+            </div>
+          )}
           {myMood && (
             <div className="dash-mood-status">
               <span>YOU: {myMood.mood}</span>
