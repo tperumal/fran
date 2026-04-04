@@ -132,6 +132,60 @@
   margin-right: 6px;
 }
 
+/* ---- Title Row ---- */
+
+.dash-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.dash-title-row .header-btn.active {
+  background: var(--text);
+  color: var(--bg);
+}
+
+/* ---- Edit Card ---- */
+
+.dash-edit-card {
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+.dash-edit-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.dash-edit-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  background: var(--bg);
+  border: 2px solid var(--border-light);
+  color: var(--text-dim);
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.dash-edit-toggle:hover {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+.dash-edit-toggle--on {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+
 /* ---- Widgets Row (Mood + Weather) ---- */
 
 .dash-widgets {

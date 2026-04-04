@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Dumbbell, UtensilsCrossed, CheckSquare, Wallet, Gamepad2, Briefcase, Sun, ChevronRight, Calendar } from 'lucide-react'
+import { Dumbbell, UtensilsCrossed, CheckSquare, Wallet, Gamepad2, Briefcase, Sun, ChevronRight, Pencil, X, Eye, EyeOff } from 'lucide-react'
 import { format, isToday, isTomorrow, parseISO, startOfWeek, addDays, isBefore, formatDistanceToNowStrict } from 'date-fns'
 import useMood from '../hooks/useMood'
 import './Dashboard.css'
@@ -15,7 +15,7 @@ function loadJSON(key, fallback = []) {
 
 const WEATHER_CACHE_KEY = 'fran-weather-cache'
 const GEO_CACHE_KEY = 'fran-geo-cache'
-const WEATHER_TTL = 30 * 60 * 1000 // 30 minutes
+const WEATHER_TTL = 30 * 60 * 1000
 
 function weatherCodeToEmoji(code) {
   if (code === 0) return { emoji: '\u2600\uFE0F', label: 'CLEAR' }
@@ -39,67 +39,56 @@ function useWeather() {
       )
       const data = await res.json()
       if (!data.current) throw new Error('No weather data')
-      const result = {
-        temp: Math.round(data.current.temperature_2m),
-        code: data.current.weather_code,
-        fetchedAt: Date.now(),
-      }
+      const result = { temp: Math.round(data.current.temperature_2m), code: data.current.weather_code, fetchedAt: Date.now() }
       localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(result))
       setWeather(result)
       setLoading(false)
-    } catch (err) {
-      setError('FETCH_FAILED')
-      setLoading(false)
-    }
+    } catch { setError('FETCH_FAILED'); setLoading(false) }
   }, [])
 
   const requestLocation = useCallback(() => {
     setError(null)
     setLoading(true)
-
-    // Check cached geo
     const cachedGeo = localStorage.getItem(GEO_CACHE_KEY)
     if (cachedGeo) {
       const { lat, lng } = JSON.parse(cachedGeo)
-      // Check cached weather
       const cachedWeather = localStorage.getItem(WEATHER_CACHE_KEY)
       if (cachedWeather) {
         const parsed = JSON.parse(cachedWeather)
-        if (Date.now() - parsed.fetchedAt < WEATHER_TTL) {
-          setWeather(parsed)
-          setLoading(false)
-          return
-        }
+        if (Date.now() - parsed.fetchedAt < WEATHER_TTL) { setWeather(parsed); setLoading(false); return }
       }
       fetchWeather(lat, lng)
       return
     }
-
-    if (!navigator.geolocation) {
-      setError('NO_GEO')
-      setLoading(false)
-      return
-    }
-
+    if (!navigator.geolocation) { setError('NO_GEO'); setLoading(false); return }
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const geo = { lat: pos.coords.latitude, lng: pos.coords.longitude }
-        localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(geo))
-        fetchWeather(geo.lat, geo.lng)
-      },
-      () => {
-        setError('DENIED')
-        setLoading(false)
-      },
+      (pos) => { const geo = { lat: pos.coords.latitude, lng: pos.coords.longitude }; localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(geo)); fetchWeather(geo.lat, geo.lng) },
+      () => { setError('DENIED'); setLoading(false) },
       { timeout: 10000 }
     )
   }, [fetchWeather])
 
-  useEffect(() => {
-    requestLocation()
-  }, [requestLocation])
-
+  useEffect(() => { requestLocation() }, [requestLocation])
   return { weather, error, loading, retry: requestLocation }
+}
+
+/* ---- Dashboard visibility ---- */
+
+const DASH_VIS_KEY = 'fran-dash-visible'
+const ALL_WIDGETS = ['mood', 'weather']
+const ALL_MODULES = ['tasks', 'fitness', 'meals', 'career', 'money', 'hobbies', 'weekend']
+const DEFAULT_VISIBLE = [...ALL_WIDGETS, ...ALL_MODULES]
+
+function loadVisible() {
+  try {
+    const stored = localStorage.getItem(DASH_VIS_KEY)
+    if (stored) return JSON.parse(stored)
+  } catch { /* ignore */ }
+  return DEFAULT_VISIBLE
+}
+
+function saveVisible(ids) {
+  localStorage.setItem(DASH_VIS_KEY, JSON.stringify(ids))
 }
 
 export default function Dashboard() {
@@ -107,6 +96,10 @@ export default function Dashboard() {
   const { myMood, partnerMoods, historyStrip, logMood, loading: moodLoading, moodError } = useMood()
   const { weather, error: weatherError, loading: weatherLoading, retry: retryWeather } = useWeather()
   const [data, setData] = useState({ workouts: [], tasks: [], bills: [], mealPlan: null, media: [], groceryItems: [], milestones: [], weekendActivities: [] })
+  const [visible, setVisible] = useState(loadVisible)
+  const [editing, setEditing] = useState(false)
+
+  useEffect(() => { saveVisible(visible) }, [visible])
 
   useEffect(() => {
     const workouts = loadJSON('hive-workouts')
@@ -116,61 +109,31 @@ export default function Dashboard() {
     const groceryItems = loadJSON('hive-grocery-items')
     const milestones = loadJSON('hive-career-milestones')
     const weekendActivities = loadJSON('hive-weekend-activities')
-
-    // Find this week's meal plan
     const plans = loadJSON('hive-meal-plans')
     const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd')
     const mealPlan = plans.find(p => p.weekStart === weekStart) || null
-
     setData({ workouts, tasks, bills, mealPlan, media, groceryItems, milestones, weekendActivities })
   }, [])
 
   const today = new Date()
   const dayKey = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][today.getDay()]
-
-  // Recent workout
   const lastWorkout = data.workouts.sort((a, b) => new Date(b.date) - new Date(a.date))[0]
-
-  // Today's meals
   const todayMeals = data.mealPlan?.meals?.[dayKey] || {}
   const hasMeals = todayMeals.breakfast || todayMeals.lunch || todayMeals.dinner
-
-  // Pending tasks
   const pendingTasks = data.tasks.filter(t => !t.completed).sort((a, b) => {
-    if (!a.dueDate) return 1
-    if (!b.dueDate) return -1
+    if (!a.dueDate) return 1; if (!b.dueDate) return -1
     return new Date(a.dueDate) - new Date(b.dueDate)
   }).slice(0, 5)
-
-  // Upcoming bills (due within 7 days)
   const currentDay = today.getDate()
-  const upcomingBills = data.bills.filter(b => {
-    const diff = b.dueDay - currentDay
-    return diff >= 0 && diff <= 7
-  }).sort((a, b) => a.dueDay - b.dueDay)
-
-  // Currently consuming media
+  const upcomingBills = data.bills.filter(b => { const diff = b.dueDay - currentDay; return diff >= 0 && diff <= 7 }).sort((a, b) => a.dueDay - b.dueDay)
   const currentMedia = data.media.filter(m => m.status === 'in_progress').slice(0, 3)
-
-  // Unchecked grocery items
   const uncheckedGroceries = data.groceryItems.filter(g => !g.checked).length
-
-  // Career — recent milestones & active goals
-  const recentMilestones = data.milestones
-    .filter(m => m.category !== 'goal' || m.completed)
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 2)
+  const recentMilestones = data.milestones.filter(m => m.category !== 'goal' || m.completed).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 2)
   const activeGoals = data.milestones.filter(m => m.category === 'goal' && !m.completed).slice(0, 3)
-
-  // Weekend — this week's activities
   const weekStart = format(startOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd')
-  const weekendPlans = data.weekendActivities
-    .filter(a => a.weekKey === weekStart && !a.done)
-    .sort((a, b) => {
-      if (a.day !== b.day) return a.day === 'sat' ? -1 : 1
-      return (a.time || '').localeCompare(b.time || '')
-    })
-    .slice(0, 4)
+  const weekendPlans = data.weekendActivities.filter(a => a.weekKey === weekStart && !a.done).sort((a, b) => {
+    if (a.day !== b.day) return a.day === 'sat' ? -1 : 1; return (a.time || '').localeCompare(b.time || '')
+  }).slice(0, 4)
 
   const MOODS = [
     { emoji: '\uD83D\uDE34', label: 'Tired' },
@@ -179,235 +142,192 @@ export default function Dashboard() {
     { emoji: '\uD83D\uDE42', label: 'Good' },
     { emoji: '\uD83D\uDD25', label: 'Great' },
   ]
-
   const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
-  // historyStrip is last 7 days starting 6 days ago
-  // We need to figure out labels starting from 6 days ago
-  const todayIdx = (new Date().getDay() + 6) % 7 // 0=Mon
+  const todayIdx = (new Date().getDay() + 6) % 7
   const stripLabels = []
-  for (let i = 6; i >= 0; i--) {
-    stripLabels.push(DAY_LABELS[((todayIdx - i + 7) % 7)])
+  for (let i = 6; i >= 0; i--) { stripLabels.push(DAY_LABELS[((todayIdx - i + 7) % 7)]) }
+
+  const isVis = (id) => visible.includes(id)
+  const toggleVis = (id) => {
+    setVisible(prev => prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id])
+  }
+
+  const ITEM_LABELS = {
+    mood: 'MOOD', weather: 'WEATHER', tasks: 'TASKS', fitness: 'FITNESS',
+    meals: 'MEALS', career: 'CAREER', money: 'MONEY', hobbies: 'HOBBIES', weekend: 'WEEKEND',
   }
 
   return (
     <div className="page">
-      <h2>Today</h2>
-      <p className="text-muted">{format(today, 'EEEE, MMMM d')}</p>
+      <div className="dash-title-row">
+        <div>
+          <h2>Today</h2>
+          <p className="text-muted">{format(today, 'EEEE, MMMM d')}</p>
+        </div>
+        <button className={`header-btn ${editing ? 'active' : ''}`} onClick={() => setEditing(e => !e)} title="Edit dashboard">
+          {editing ? <X size={18} /> : <Pencil size={18} />}
+        </button>
+      </div>
 
-      {/* Mood + Weather Widgets */}
-      <div className="dash-widgets">
-        {/* Mood Check-in */}
-        <div className="card dash-widget dash-mood">
-          <div className="dash-widget-label">MOOD CHECK-IN</div>
-          <div className="dash-mood-picker">
-            {MOODS.map(m => (
+      {/* Edit mode */}
+      {editing && (
+        <div className="card dash-edit-card">
+          <div className="dash-widget-label">SHOW / HIDE</div>
+          <div className="dash-edit-grid">
+            {[...ALL_WIDGETS, ...ALL_MODULES].map(id => (
               <button
-                key={m.emoji}
-                className={`dash-mood-btn ${myMood?.mood === m.emoji ? 'active' : ''}`}
-                onClick={() => logMood(m.emoji)}
-                title={m.label}
+                key={id}
+                className={`dash-edit-toggle ${isVis(id) ? 'dash-edit-toggle--on' : ''}`}
+                onClick={() => toggleVis(id)}
               >
-                {m.emoji}
+                {isVis(id) ? <Eye size={14} /> : <EyeOff size={14} />}
+                <span>{ITEM_LABELS[id]}</span>
               </button>
             ))}
           </div>
-          {myMood && (
-            <div className="dash-mood-status">
-              <span>YOU: {myMood.mood}</span>
-              <span className="text-muted"> &mdash; {formatDistanceToNowStrict(new Date(myMood.created_at), { addSuffix: false }).toUpperCase()} AGO</span>
+        </div>
+      )}
+
+      {/* Mood + Weather Widgets */}
+      {(isVis('mood') || isVis('weather')) && (
+        <div className="dash-widgets">
+          {isVis('mood') && (
+            <div className="card dash-widget dash-mood">
+              <div className="dash-widget-label">MOOD CHECK-IN</div>
+              <div className="dash-mood-picker">
+                {MOODS.map(m => (
+                  <button key={m.emoji} className={`dash-mood-btn ${myMood?.mood === m.emoji ? 'active' : ''}`} onClick={() => logMood(m.emoji)} title={m.label}>
+                    {m.emoji}
+                  </button>
+                ))}
+              </div>
+              {myMood && (
+                <div className="dash-mood-status">
+                  <span>YOU: {myMood.mood}</span>
+                  <span className="text-muted"> &mdash; {formatDistanceToNowStrict(new Date(myMood.created_at), { addSuffix: false }).toUpperCase()} AGO</span>
+                </div>
+              )}
+              {partnerMoods.map(pm => (
+                <div key={pm.profile_id} className="dash-mood-status">
+                  <span>{pm.displayName.toUpperCase()}: {pm.mood}</span>
+                  <span className="text-muted"> &mdash; {formatDistanceToNowStrict(new Date(pm.created_at), { addSuffix: false }).toUpperCase()} AGO</span>
+                </div>
+              ))}
+              <div className="dash-mood-history">
+                {historyStrip.map((m, i) => (
+                  <div key={i} className="dash-mood-day">
+                    <span className="dash-mood-day-label">{stripLabels[i]}</span>
+                    <span className={`dash-mood-day-val ${m ? '' : 'empty'}`}>{m || '\u00B7'}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-          {partnerMoods.map(pm => (
-            <div key={pm.profile_id} className="dash-mood-status">
-              <span>{pm.displayName.toUpperCase()}: {pm.mood}</span>
-              <span className="text-muted"> &mdash; {formatDistanceToNowStrict(new Date(pm.created_at), { addSuffix: false }).toUpperCase()} AGO</span>
-            </div>
-          ))}
-          <div className="dash-mood-history">
-            {historyStrip.map((m, i) => (
-              <div key={i} className="dash-mood-day">
-                <span className="dash-mood-day-label">{stripLabels[i]}</span>
-                <span className={`dash-mood-day-val ${m ? '' : 'empty'}`}>{m || '\u00B7'}</span>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Weather */}
-        <div className="card dash-widget dash-weather">
-          <div className="dash-widget-label">WEATHER</div>
-          {weatherLoading ? (
-            <div className="dash-weather-body">
-              <span className="text-muted">LOADING...</span>
+          {isVis('weather') && (
+            <div className="card dash-widget dash-weather">
+              <div className="dash-widget-label">WEATHER</div>
+              {weatherLoading ? (
+                <div className="dash-weather-body"><span className="text-muted">LOADING...</span></div>
+              ) : weatherError ? (
+                <div className="dash-weather-body">
+                  <span className="text-muted">LOCATION NEEDED</span>
+                  <button className="btn btn-secondary dash-weather-retry" onClick={retryWeather}>RETRY</button>
+                </div>
+              ) : weather ? (
+                <div className="dash-weather-body">
+                  <span className="dash-weather-emoji">{weatherCodeToEmoji(weather.code).emoji}</span>
+                  <span className="dash-weather-temp">{weather.temp}&deg;F</span>
+                  <span className="dash-weather-desc">{weatherCodeToEmoji(weather.code).label}</span>
+                </div>
+              ) : null}
             </div>
-          ) : weatherError ? (
-            <div className="dash-weather-body">
-              <span className="text-muted">LOCATION NEEDED</span>
-              <button className="btn btn-secondary dash-weather-retry" onClick={retryWeather}>RETRY</button>
-            </div>
-          ) : weather ? (
-            <div className="dash-weather-body">
-              <span className="dash-weather-emoji">{weatherCodeToEmoji(weather.code).emoji}</span>
-              <span className="dash-weather-temp">{weather.temp}&deg;F</span>
-              <span className="dash-weather-desc">{weatherCodeToEmoji(weather.code).label}</span>
-            </div>
-          ) : null}
+          )}
         </div>
-      </div>
+      )}
 
       <div className="dash-grid">
-        {/* Tasks Card */}
-        <div className="card dash-card" onClick={() => navigate('/tasks')}>
-          <div className="dash-card-header">
-            <CheckSquare size={18} />
-            <span>Tasks</span>
-            <ChevronRight size={16} className="dash-chevron" />
+        {isVis('tasks') && (
+          <div className="card dash-card" onClick={() => navigate('/tasks')}>
+            <div className="dash-card-header"><CheckSquare size={18} /><span>Tasks</span><ChevronRight size={16} className="dash-chevron" /></div>
+            {pendingTasks.length > 0 ? (
+              <div className="dash-card-body">
+                {pendingTasks.map(t => (
+                  <div key={t.id} className="dash-task-item">
+                    <span className="dash-task-dot" /><span>{t.title}</span>
+                    {t.dueDate && <span className={`dash-due ${isBefore(parseISO(t.dueDate), today) ? 'overdue' : ''}`}>{isToday(parseISO(t.dueDate)) ? 'Today' : isTomorrow(parseISO(t.dueDate)) ? 'Tomorrow' : format(parseISO(t.dueDate), 'MMM d')}</span>}
+                  </div>
+                ))}
+              </div>
+            ) : <p className="text-muted">All caught up!</p>}
           </div>
-          {pendingTasks.length > 0 ? (
-            <div className="dash-card-body">
-              {pendingTasks.map(t => (
-                <div key={t.id} className="dash-task-item">
-                  <span className="dash-task-dot" />
-                  <span>{t.title}</span>
-                  {t.dueDate && (
-                    <span className={`dash-due ${isBefore(parseISO(t.dueDate), today) ? 'overdue' : ''}`}>
-                      {isToday(parseISO(t.dueDate)) ? 'Today' : isTomorrow(parseISO(t.dueDate)) ? 'Tomorrow' : format(parseISO(t.dueDate), 'MMM d')}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted">All caught up!</p>
-          )}
-        </div>
+        )}
 
-        {/* Fitness Card */}
-        <div className="card dash-card" onClick={() => navigate('/fitness')}>
-          <div className="dash-card-header">
-            <Dumbbell size={18} />
-            <span>Fitness</span>
-            <ChevronRight size={16} className="dash-chevron" />
+        {isVis('fitness') && (
+          <div className="card dash-card" onClick={() => navigate('/fitness')}>
+            <div className="dash-card-header"><Dumbbell size={18} /><span>Fitness</span><ChevronRight size={16} className="dash-chevron" /></div>
+            {lastWorkout ? (
+              <div className="dash-card-body">
+                <p className="dash-highlight">{lastWorkout.name || 'Workout'}</p>
+                <p className="text-muted">{lastWorkout.exercises?.length || 0} exercises &middot; {format(parseISO(lastWorkout.date), 'EEE')}</p>
+              </div>
+            ) : <p className="text-muted">Start your first workout</p>}
           </div>
-          {lastWorkout ? (
-            <div className="dash-card-body">
-              <p className="dash-highlight">{lastWorkout.name || 'Workout'}</p>
-              <p className="text-muted">{lastWorkout.exercises?.length || 0} exercises &middot; {format(parseISO(lastWorkout.date), 'EEE')}</p>
-            </div>
-          ) : (
-            <p className="text-muted">Start your first workout</p>
-          )}
-        </div>
+        )}
 
-        {/* Meals Card */}
-        <div className="card dash-card" onClick={() => navigate('/meals')}>
-          <div className="dash-card-header">
-            <UtensilsCrossed size={18} />
-            <span>Meals</span>
-            <ChevronRight size={16} className="dash-chevron" />
+        {isVis('meals') && (
+          <div className="card dash-card" onClick={() => navigate('/meals')}>
+            <div className="dash-card-header"><UtensilsCrossed size={18} /><span>Meals</span><ChevronRight size={16} className="dash-chevron" /></div>
+            {hasMeals ? (
+              <div className="dash-card-body dash-meals-list">
+                {todayMeals.breakfast && <p><span className="dash-meal-label">B</span> {todayMeals.breakfast}</p>}
+                {todayMeals.lunch && <p><span className="dash-meal-label">L</span> {todayMeals.lunch}</p>}
+                {todayMeals.dinner && <p><span className="dash-meal-label">D</span> {todayMeals.dinner}</p>}
+              </div>
+            ) : <p className="text-muted">No meals planned today</p>}
+            {uncheckedGroceries > 0 && <p className="dash-badge">{uncheckedGroceries} grocery items</p>}
           </div>
-          {hasMeals ? (
-            <div className="dash-card-body dash-meals-list">
-              {todayMeals.breakfast && <p><span className="dash-meal-label">B</span> {todayMeals.breakfast}</p>}
-              {todayMeals.lunch && <p><span className="dash-meal-label">L</span> {todayMeals.lunch}</p>}
-              {todayMeals.dinner && <p><span className="dash-meal-label">D</span> {todayMeals.dinner}</p>}
-            </div>
-          ) : (
-            <p className="text-muted">No meals planned today</p>
-          )}
-          {uncheckedGroceries > 0 && (
-            <p className="dash-badge">{uncheckedGroceries} grocery items</p>
-          )}
-        </div>
+        )}
 
-        {/* Career Card */}
-        <div className="card dash-card" onClick={() => navigate('/career')}>
-          <div className="dash-card-header">
-            <Briefcase size={18} />
-            <span>Career</span>
-            <ChevronRight size={16} className="dash-chevron" />
+        {isVis('career') && (
+          <div className="card dash-card" onClick={() => navigate('/career')}>
+            <div className="dash-card-header"><Briefcase size={18} /><span>Career</span><ChevronRight size={16} className="dash-chevron" /></div>
+            {activeGoals.length > 0 ? (
+              <div className="dash-card-body">{activeGoals.map(g => (<div key={g.id} className="dash-task-item"><span className="dash-task-dot" /><span>{g.title}</span></div>))}</div>
+            ) : recentMilestones.length > 0 ? (
+              <div className="dash-card-body">{recentMilestones.map(m => (<p key={m.id} className="text-muted" style={{ fontSize: '0.85rem' }}>{m.title}</p>))}</div>
+            ) : <p className="text-muted">Track your wins</p>}
           </div>
-          {activeGoals.length > 0 ? (
-            <div className="dash-card-body">
-              {activeGoals.map(g => (
-                <div key={g.id} className="dash-task-item">
-                  <span className="dash-task-dot" />
-                  <span>{g.title}</span>
-                </div>
-              ))}
-            </div>
-          ) : recentMilestones.length > 0 ? (
-            <div className="dash-card-body">
-              {recentMilestones.map(m => (
-                <p key={m.id} className="text-muted" style={{ fontSize: '0.85rem' }}>{m.title}</p>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted">Track your wins</p>
-          )}
-        </div>
+        )}
 
-        {/* Money Card */}
-        <div className="card dash-card" onClick={() => navigate('/money')}>
-          <div className="dash-card-header">
-            <Wallet size={18} />
-            <span>Money</span>
-            <ChevronRight size={16} className="dash-chevron" />
+        {isVis('money') && (
+          <div className="card dash-card" onClick={() => navigate('/money')}>
+            <div className="dash-card-header"><Wallet size={18} /><span>Money</span><ChevronRight size={16} className="dash-chevron" /></div>
+            {upcomingBills.length > 0 ? (
+              <div className="dash-card-body">
+                {upcomingBills.map(b => (<div key={b.id} className="dash-bill-item"><span>{b.name}</span><span className="text-accent">${Number(b.amount).toLocaleString()}</span><span className="text-muted">due {b.dueDay === currentDay ? 'today' : `in ${b.dueDay - currentDay}d`}</span></div>))}
+              </div>
+            ) : <p className="text-muted">No bills due soon</p>}
           </div>
-          {upcomingBills.length > 0 ? (
-            <div className="dash-card-body">
-              {upcomingBills.map(b => (
-                <div key={b.id} className="dash-bill-item">
-                  <span>{b.name}</span>
-                  <span className="text-accent">${Number(b.amount).toLocaleString()}</span>
-                  <span className="text-muted">due {b.dueDay === currentDay ? 'today' : `in ${b.dueDay - currentDay}d`}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted">No bills due soon</p>
-          )}
-        </div>
+        )}
 
-        {/* Hobbies Card */}
-        <div className="card dash-card" onClick={() => navigate('/hobbies')}>
-          <div className="dash-card-header">
-            <Gamepad2 size={18} />
-            <span>Hobbies</span>
-            <ChevronRight size={16} className="dash-chevron" />
+        {isVis('hobbies') && (
+          <div className="card dash-card" onClick={() => navigate('/hobbies')}>
+            <div className="dash-card-header"><Gamepad2 size={18} /><span>Hobbies</span><ChevronRight size={16} className="dash-chevron" /></div>
+            {currentMedia.length > 0 ? (
+              <div className="dash-card-body">{currentMedia.map(m => (<p key={m.id}><span className="dash-media-type">{m.type}</span> {m.title}</p>))}</div>
+            ) : <p className="text-muted">Nothing in progress</p>}
           </div>
-          {currentMedia.length > 0 ? (
-            <div className="dash-card-body">
-              {currentMedia.map(m => (
-                <p key={m.id}><span className="dash-media-type">{m.type}</span> {m.title}</p>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted">Nothing in progress</p>
-          )}
-        </div>
+        )}
 
-        {/* Weekend Card */}
-        <div className="card dash-card" onClick={() => navigate('/weekend')}>
-          <div className="dash-card-header">
-            <Sun size={18} />
-            <span>Weekend</span>
-            <ChevronRight size={16} className="dash-chevron" />
+        {isVis('weekend') && (
+          <div className="card dash-card" onClick={() => navigate('/weekend')}>
+            <div className="dash-card-header"><Sun size={18} /><span>Weekend</span><ChevronRight size={16} className="dash-chevron" /></div>
+            {weekendPlans.length > 0 ? (
+              <div className="dash-card-body">{weekendPlans.map(a => (<div key={a.id} className="dash-task-item"><span className="dash-task-dot" /><span>{a.title}</span>{a.time && <span className="dash-due">{a.time}</span>}</div>))}</div>
+            ) : <p className="text-muted">No plans yet</p>}
           </div>
-          {weekendPlans.length > 0 ? (
-            <div className="dash-card-body">
-              {weekendPlans.map(a => (
-                <div key={a.id} className="dash-task-item">
-                  <span className="dash-task-dot" />
-                  <span>{a.title}</span>
-                  {a.time && <span className="dash-due">{a.time}</span>}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted">No plans yet</p>
-          )}
-        </div>
+        )}
       </div>
     </div>
   )
