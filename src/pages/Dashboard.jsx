@@ -211,11 +211,6 @@ export default function Dashboard() {
               </button>
             ))}
           </div>
-          {moodError && (
-            <div className="dash-mood-status" style={{ color: 'var(--danger)' }}>
-              <span>ERROR: {moodError}</span>
-            </div>
-          )}
           {myMood && (
             <div className="dash-mood-status">
               <span>YOU: {myMood.mood}</span>
