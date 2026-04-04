@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" fill="#ffffff"/>
+
+  <!-- Barcode bars — varying widths, brutalist rhythm -->
+  <rect x="128" y="192" width="12" height="640" fill="#000"/>
+  <rect x="148" y="192" width="6" height="640" fill="#000"/>
+  <rect x="164" y="192" width="24" height="640" fill="#000"/>
+  <rect x="200" y="192" width="8" height="640" fill="#000"/>
+  <rect x="218" y="192" width="18" height="640" fill="#000"/>
+  <rect x="248" y="192" width="6" height="640" fill="#000"/>
+  <rect x="264" y="192" width="36" height="640" fill="#000"/>
+  <rect x="312" y="192" width="10" height="640" fill="#000"/>
+  <rect x="332" y="192" width="6" height="640" fill="#000"/>
+  <rect x="350" y="192" width="20" height="640" fill="#000"/>
+  <rect x="382" y="192" width="8" height="640" fill="#000"/>
+  <rect x="400" y="192" width="40" height="640" fill="#000"/>
+  <rect x="452" y="192" width="6" height="640" fill="#000"/>
+  <rect x="468" y="192" width="14" height="640" fill="#000"/>
+  <rect x="494" y="192" width="28" height="640" fill="#000"/>
+  <rect x="534" y="192" width="8" height="640" fill="#000"/>
+  <rect x="554" y="192" width="18" height="640" fill="#000"/>
+  <rect x="584" y="192" width="6" height="640" fill="#000"/>
+  <rect x="600" y="192" width="32" height="640" fill="#000"/>
+  <rect x="644" y="192" width="10" height="640" fill="#000"/>
+  <rect x="666" y="192" width="6" height="640" fill="#000"/>
+  <rect x="682" y="192" width="22" height="640" fill="#000"/>
+  <rect x="716" y="192" width="8" height="640" fill="#000"/>
+  <rect x="736" y="192" width="14" height="640" fill="#000"/>
+  <rect x="762" y="192" width="36" height="640" fill="#000"/>
+  <rect x="810" y="192" width="6" height="640" fill="#000"/>
+  <rect x="826" y="192" width="18" height="640" fill="#000"/>
+  <rect x="856" y="192" width="10" height="640" fill="#000"/>
+  <rect x="876" y="192" width="24" height="640" fill="#000"/>
+</svg>
