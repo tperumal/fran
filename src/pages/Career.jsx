@@ -1,34 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   Plus, Trash2, Pencil, X, Trophy, Target, TrendingUp,
   Calendar, ChevronDown, ChevronUp
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
+import useStore from '../hooks/useStore'
 import './Career.css'
-
-const MILESTONES_KEY = 'hive-career-milestones'
 
 const CATEGORIES = [
   { value: 'promotion', label: 'Promotion', icon: TrendingUp, color: 'green' },
   { value: 'achievement', label: 'Achievement', icon: Trophy, color: 'amber' },
   { value: 'goal', label: 'Goal', icon: Target, color: 'blue' },
 ]
-
-function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
-}
-
-function loadMilestones() {
-  try {
-    const stored = localStorage.getItem(MILESTONES_KEY)
-    if (stored) return JSON.parse(stored)
-  } catch { /* ignore */ }
-  return []
-}
-
-function saveMilestones(items) {
-  localStorage.setItem(MILESTONES_KEY, JSON.stringify(items))
-}
 
 const EMPTY_FORM = {
   title: '',
@@ -39,20 +22,25 @@ const EMPTY_FORM = {
 }
 
 export default function Career() {
-  const [milestones, setMilestones] = useState(loadMilestones)
+  const { items: milestones, addItem, updateItem, deleteItem, loading } = useStore(
+    'career_milestones',
+    'hive-career-milestones',
+    {
+      orderBy: 'date',
+      ascending: false,
+    }
+  )
+
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [filterCat, setFilterCat] = useState('all')
   const [expandedId, setExpandedId] = useState(null)
 
-  useEffect(() => { saveMilestones(milestones) }, [milestones])
-
   const filtered = milestones
     .filter(m => filterCat === 'all' || m.category === filterCat)
     .sort((a, b) => new Date(b.date) - new Date(a.date))
 
-  // Stats
   const totalAchieved = milestones.filter(m => m.category !== 'goal' || m.completed).length
   const activeGoals = milestones.filter(m => m.category === 'goal' && !m.completed).length
 
@@ -79,48 +67,52 @@ export default function Career() {
     setForm(EMPTY_FORM)
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     if (!form.title.trim()) return
 
-    const now = new Date().toISOString()
-
     if (editingId) {
-      setMilestones(prev => prev.map(m =>
-        m.id === editingId ? { ...m, ...form, updatedAt: now } : m
-      ))
-    } else {
-      setMilestones(prev => [...prev, {
-        id: generateId(),
+      await updateItem(editingId, {
         ...form,
-        createdAt: now,
-        updatedAt: now,
-      }])
+        updated_at: new Date().toISOString(),
+      })
+    } else {
+      await addItem({
+        id: crypto.randomUUID(),
+        ...form,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
     }
     closeForm()
   }
 
-  function deleteMilestone(id) {
-    setMilestones(prev => prev.filter(m => m.id !== id))
+  async function handleDelete(id) {
+    await deleteItem(id)
     if (expandedId === id) setExpandedId(null)
   }
 
-  function toggleCompleted(id) {
-    setMilestones(prev => prev.map(m =>
-      m.id === id ? { ...m, completed: !m.completed, updatedAt: new Date().toISOString() } : m
-    ))
+  async function toggleCompleted(id) {
+    const item = milestones.find(m => m.id === id)
+    if (item) {
+      await updateItem(id, {
+        completed: !item.completed,
+        updated_at: new Date().toISOString(),
+      })
+    }
   }
 
   function getCategoryInfo(cat) {
     return CATEGORIES.find(c => c.value === cat) || CATEGORIES[1]
   }
 
+  if (loading) return <div className="page"><p className="text-muted">Loading...</p></div>
+
   return (
     <div className="page">
       <h2>Career</h2>
       <p className="text-muted">Track milestones and goals.</p>
 
-      {/* Stats */}
       <div className="career-stats">
         <div className="career-stat">
           <span className="career-stat-number">{totalAchieved}</span>
@@ -132,15 +124,12 @@ export default function Career() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="career-controls">
         <div className="career-filters">
           <button
             className={`career-pill ${filterCat === 'all' ? 'career-pill--active' : ''}`}
             onClick={() => setFilterCat('all')}
-          >
-            All
-          </button>
+          >All</button>
           {CATEGORIES.map(c => {
             const Icon = c.icon
             return (
@@ -160,7 +149,6 @@ export default function Career() {
         </button>
       </div>
 
-      {/* Form modal */}
       {showForm && (
         <div className="career-modal-backdrop" onClick={closeForm}>
           <div className="card career-form-card" onClick={e => e.stopPropagation()}>
@@ -217,7 +205,6 @@ export default function Career() {
         </div>
       )}
 
-      {/* Empty state */}
       {filtered.length === 0 && (
         <div className="career-empty">
           <Trophy size={32} />
@@ -225,7 +212,6 @@ export default function Career() {
         </div>
       )}
 
-      {/* Timeline */}
       <div className="career-timeline">
         {filtered.map(item => {
           const catInfo = getCategoryInfo(item.category)
@@ -266,7 +252,7 @@ export default function Career() {
                     <button className="btn btn-ghost btn-sm" onClick={() => openForm(item)}>
                       <Pencil size={14} /> Edit
                     </button>
-                    <button className="btn btn-ghost btn-sm career-delete-btn" onClick={() => deleteMilestone(item.id)}>
+                    <button className="btn btn-ghost btn-sm career-delete-btn" onClick={() => handleDelete(item.id)}>
                       <Trash2 size={14} /> Delete
                     </button>
                   </div>
