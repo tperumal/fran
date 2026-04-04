@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import useStore from '../hooks/useStore'
 import {
   CalendarDays,
   BookOpen,
@@ -58,13 +59,35 @@ function emptyWeekMeals() {
 
 export default function Meals() {
   const [tab, setTab] = useState('plan')
-  const [recipes, setRecipes] = useState(() => loadJSON('hive-recipes', []))
-  const [mealPlans, setMealPlans] = useState(() => loadJSON('hive-meal-plans', []))
-  const [groceryItems, setGroceryItems] = useState(() => loadJSON('hive-grocery-items', []))
 
-  useEffect(() => { localStorage.setItem('hive-recipes', JSON.stringify(recipes)) }, [recipes])
+  const { items: recipes, setItems: setRecipes, loading: loadingRecipes } = useStore(
+    'recipes', 'hive-recipes',
+    {
+      toRow: item => ({
+        name: item.name,
+        description: item.description || null,
+        ingredients: item.ingredients || null,
+        instructions: item.instructions || null,
+        prep_time_min: item.prepTime ? Number(item.prepTime) : null,
+        cook_time_min: item.cookTime ? Number(item.cookTime) : null,
+        servings: item.servings ? Number(item.servings) : null,
+        tags: item.tags || null,
+      }),
+      fromRow: row => ({
+        ...row,
+        prepTime: row.prep_time_min,
+        cookTime: row.cook_time_min,
+      }),
+    }
+  )
+
+  const { items: groceryItems, setItems: setGroceryItems, loading: loadingGrocery } = useStore(
+    'grocery_items', 'hive-grocery-items',
+  )
+
+  // Meal plans stay on localStorage for now (complex nested structure)
+  const [mealPlans, setMealPlans] = useState(() => loadJSON('hive-meal-plans', []))
   useEffect(() => { localStorage.setItem('hive-meal-plans', JSON.stringify(mealPlans)) }, [mealPlans])
-  useEffect(() => { localStorage.setItem('hive-grocery-items', JSON.stringify(groceryItems)) }, [groceryItems])
 
   return (
     <div className="page meals-page">

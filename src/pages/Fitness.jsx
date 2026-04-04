@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import {
   Dumbbell,
   Plus,
@@ -9,44 +9,23 @@ import {
   Clock,
   ClipboardList,
   History,
-  BookTemplate,
   Play,
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
+import useFitnessData from '../hooks/useFitnessData'
 import './Fitness.css'
 
-const WORKOUTS_KEY = 'hive-workouts'
-const TEMPLATES_KEY = 'hive-workout-templates'
-
 function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
-}
-
-function loadJSON(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key)
-    return raw ? JSON.parse(raw) : fallback
-  } catch {
-    return fallback
-  }
-}
-
-function saveJSON(key, value) {
-  localStorage.setItem(key, JSON.stringify(value))
+  return crypto.randomUUID()
 }
 
 // ─── Main Component ─────────────────────────────────────────
 
 export default function Fitness() {
+  const { workouts, templates, loading, saveWorkout, deleteWorkout: removeWorkout, saveTemplate, deleteTemplate: removeTemplate } = useFitnessData()
   const [tab, setTab] = useState('history')
-  const [workouts, setWorkouts] = useState(() => loadJSON(WORKOUTS_KEY, []))
-  const [templates, setTemplates] = useState(() => loadJSON(TEMPLATES_KEY, []))
   const [activeWorkout, setActiveWorkout] = useState(null)
   const [expandedId, setExpandedId] = useState(null)
-
-  // Persist
-  useEffect(() => { saveJSON(WORKOUTS_KEY, workouts) }, [workouts])
-  useEffect(() => { saveJSON(TEMPLATES_KEY, templates) }, [templates])
 
   function startBlankWorkout() {
     setActiveWorkout({
@@ -74,7 +53,7 @@ export default function Fitness() {
     })
   }
 
-  function finishWorkout() {
+  async function finishWorkout() {
     if (!activeWorkout) return
     const filtered = activeWorkout.exercises.filter(ex => ex.name.trim())
     if (filtered.length === 0) return
@@ -90,7 +69,7 @@ export default function Fitness() {
       notes: activeWorkout.notes.trim() || undefined,
     }
 
-    setWorkouts(prev => [workout, ...prev])
+    await saveWorkout(workout)
 
     if (activeWorkout.saveAsTemplate) {
       const tmpl = {
@@ -103,21 +82,23 @@ export default function Fitness() {
           defaultWeight: ex.sets[0]?.weight || 0,
         })),
       }
-      setTemplates(prev => [tmpl, ...prev])
+      await saveTemplate(tmpl)
     }
 
     setActiveWorkout(null)
     setTab('history')
   }
 
-  function deleteWorkout(id) {
-    setWorkouts(prev => prev.filter(w => w.id !== id))
+  async function deleteWorkout(id) {
+    await removeWorkout(id)
     if (expandedId === id) setExpandedId(null)
   }
 
-  function deleteTemplate(id) {
-    setTemplates(prev => prev.filter(t => t.id !== id))
+  async function deleteTemplate(id) {
+    await removeTemplate(id)
   }
+
+  if (loading) return <div className="page"><p className="text-muted">Loading...</p></div>
 
   return (
     <div className="page">
@@ -162,7 +143,7 @@ export default function Fitness() {
         <TemplatesTab
           templates={templates}
           onDelete={deleteTemplate}
-          onAdd={tmpl => setTemplates(prev => [tmpl, ...prev])}
+          onAdd={saveTemplate}
           onUse={startFromTemplate}
         />
       )}

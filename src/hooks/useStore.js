@@ -14,6 +14,7 @@ import useAuth from './useAuth'
  * @param {object} opts.filters - extra eq filters e.g. { week_key: '2026-04-07' }
  * @param {function} opts.toRow - transform local item to DB row (strips client-only fields, adds profile_id)
  * @param {function} opts.fromRow - transform DB row to local item shape
+ * @param {string} opts.profileColumn - column name for user ID (default: 'profile_id')
  */
 export default function useStore(table, localKey, opts = {}) {
   const { user } = useAuth()
@@ -23,6 +24,7 @@ export default function useStore(table, localKey, opts = {}) {
     filters = {},
     toRow = x => x,
     fromRow = x => x,
+    profileColumn = 'profile_id',
   } = opts
 
   const isOnline = !!supabase && !!user
@@ -52,7 +54,7 @@ export default function useStore(table, localKey, opts = {}) {
       .order(orderBy, { ascending })
 
     // Apply profile filter
-    query = query.eq('profile_id', user.id)
+    query = query.eq(profileColumn, user.id)
 
     // Apply extra filters
     for (const [col, val] of Object.entries(filters)) {
@@ -76,7 +78,7 @@ export default function useStore(table, localKey, opts = {}) {
   const addItem = useCallback(async (item) => {
     if (isOnline) {
       const row = toRow(item)
-      row.profile_id = user.id
+      row[profileColumn] = user.id
       const { data, error } = await supabase
         .from(table)
         .insert(row)
