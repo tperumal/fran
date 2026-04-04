@@ -1,0 +1,96 @@
+/* ============================================
+   Meals Module — FRAN
+   ============================================ */
+
+.meals-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
+.meals-tab {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px 0; background: transparent; color: var(--text-muted);
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  border-bottom: 3px solid transparent; transition: all 0.1s ease;
+}
+.meals-tab:hover { color: var(--text); }
+.meals-tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+.meals-section { display: flex; flex-direction: column; gap: 10px; }
+.week-nav { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.week-label { font-weight: 800; font-size: 0.9rem; min-width: 180px; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+
+.day-row { padding: 12px 14px; }
+.day-label { font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+
+.meal-slots { display: flex; flex-direction: column; gap: 4px; }
+.meal-slot {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+  background: var(--bg); border: 2px solid var(--border-light);
+  text-align: left; color: var(--text); transition: border-color 0.1s ease; width: 100%;
+}
+.meal-slot:hover { border-color: var(--text); }
+.meal-slot.filled { border-color: var(--text); background: var(--bg-muted); }
+.meal-type-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); min-width: 56px; font-family: var(--font-mono); font-weight: 700; }
+.meal-value { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.slot-editor { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+.slot-editor-header { display: flex; align-items: center; justify-content: space-between; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; }
+.slot-editor-actions { display: flex; gap: 8px; }
+.slot-editor-actions .btn { flex: 1; }
+
+.recipe-picker { display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow-y: auto; border-top: 2px solid var(--border); padding-top: 8px; }
+.recipe-pick-item { padding: 8px 12px; background: transparent; color: var(--text); text-align: left; font-size: 0.85rem; transition: background 0.1s ease; }
+.recipe-pick-item:hover { background: var(--bg-muted); }
+
+.search-row { display: flex; gap: 0; align-items: stretch; }
+.search-input-wrap { flex: 1; position: relative; }
+.search-input-wrap input { padding-left: 36px; border-right: none; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dim); pointer-events: none; }
+
+.recipe-list { display: flex; flex-direction: column; gap: 6px; }
+.recipe-card { text-align: left; width: 100%; cursor: pointer; }
+.recipe-card-name { font-weight: 800; font-size: 0.9rem; text-transform: uppercase; }
+.recipe-card-meta { font-size: 0.75rem; margin-top: 2px; font-family: var(--font-mono); }
+
+.recipe-form { display: flex; flex-direction: column; gap: 10px; }
+.recipe-form textarea { resize: vertical; min-height: 60px; }
+.form-row-triple { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; }
+.form-row-triple input, .form-row-triple select { border-right: none; }
+.form-row-triple > *:last-child { border-right: 2px solid var(--border-light); }
+
+.recipe-detail { margin-top: 12px; }
+.recipe-detail h3 { font-size: 1.1rem; margin-bottom: 8px; }
+.recipe-detail h4 { font-size: 0.75rem; font-weight: 800; margin-top: 16px; margin-bottom: 6px; letter-spacing: 0.08em; }
+.recipe-meta { display: flex; flex-wrap: wrap; gap: 14px; color: var(--text-muted); font-size: 0.8rem; font-family: var(--font-mono); }
+.recipe-meta span { display: inline-flex; align-items: center; gap: 4px; }
+.recipe-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.tag { display: inline-block; padding: 2px 8px; background: var(--text); color: var(--bg); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-family: var(--font-mono); }
+.ingredient-list { list-style: none; padding: 0; }
+.ingredient-list li { padding: 4px 0; font-size: 0.85rem; border-bottom: 1px solid var(--border-light); font-family: var(--font-mono); }
+.ingredient-list li:last-child { border-bottom: none; }
+.recipe-instructions { font-size: 0.85rem; line-height: 1.6; color: var(--text-muted); white-space: pre-wrap; font-family: var(--font-mono); }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 40px 20px; color: var(--text-dim); text-align: center; }
+.empty-state p { max-width: 260px; font-size: 0.85rem; line-height: 1.5; font-family: var(--font-mono); }
+
+.grocery-actions { display: flex; gap: 0; flex-wrap: wrap; }
+.grocery-add-row { display: flex; gap: 0; align-items: stretch; }
+.grocery-add-row input { flex: 1; border-right: none; }
+.grocery-add-row select { width: auto; min-width: 100px; border-right: none; }
+.grocery-add-btn { padding: 10px 14px; flex-shrink: 0; }
+
+.grocery-list { display: flex; flex-direction: column; gap: 14px; }
+.grocery-category-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 6px; font-family: var(--font-mono); }
+
+.grocery-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: var(--bg-card); border: 2px solid var(--border-light);
+  width: 100%; text-align: left; color: var(--text);
+  transition: border-color 0.1s ease, opacity 0.2s ease; margin-bottom: 2px;
+}
+.grocery-item:hover { border-color: var(--text); }
+.grocery-item.checked { opacity: 0.4; }
+.grocery-item.checked .grocery-item-name { text-decoration: line-through; color: var(--text-dim); }
+
+.grocery-check { width: 20px; height: 20px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s ease; }
+.grocery-item.checked .grocery-check { background: var(--text); border-color: var(--text); color: var(--bg); animation: check-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes check-pop { 0% { transform: scale(0.6); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+.grocery-item-name { flex: 1; font-size: 0.85rem; font-family: var(--font-mono); }
+.grocery-badge { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 1px 5px; background: var(--text); color: var(--bg); font-family: var(--font-mono); }

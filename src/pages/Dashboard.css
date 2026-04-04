@@ -1,0 +1,141 @@
+.dash-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.dash-card {
+  cursor: pointer;
+}
+
+.dash-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+
+.dash-card-header svg {
+  stroke-width: 2.5;
+}
+
+.dash-chevron {
+  margin-left: auto;
+  color: var(--text-dim);
+}
+
+.dash-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dash-highlight {
+  font-weight: 700;
+}
+
+.dash-meals-list p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+}
+
+.dash-meal-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.dash-badge {
+  margin-top: 8px;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dash-task-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+}
+
+.dash-task-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--text);
+  flex-shrink: 0;
+}
+
+.dash-due {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.dash-due.overdue {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.dash-bill-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+}
+
+.dash-bill-item .text-accent {
+  margin-left: auto;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.dash-bill-item .text-muted {
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.dash-media-type {
+  display: inline-block;
+  padding: 1px 5px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 6px;
+}
+
+@media (min-width: 768px) {
+  .dash-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}

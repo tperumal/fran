@@ -1,0 +1,65 @@
+/* ============================================
+   Hobbies Module — FRAN
+   ============================================ */
+
+.hobbies-currently { margin-bottom: 16px; }
+.hobbies-currently h3 { margin-bottom: 10px; }
+.hobbies-currently-list { display: flex; flex-direction: column; gap: 4px; }
+.hobbies-currently-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--bg-muted); border: 2px solid var(--border); cursor: pointer; transition: background 0.1s ease; }
+.hobbies-currently-item:hover { background: var(--bg-card-hover); }
+.hobbies-type-icon { color: var(--text); flex-shrink: 0; stroke-width: 2.5; }
+.hobbies-currently-title { font-size: 0.85rem; font-weight: 700; }
+
+.hobbies-controls { margin-bottom: 16px; }
+.hobbies-type-filters { display: flex; gap: 0; overflow-x: auto; margin-bottom: 10px; scrollbar-width: none; -ms-overflow-style: none; border: 2px solid var(--border); }
+.hobbies-type-filters::-webkit-scrollbar { display: none; }
+
+.hobbies-pill {
+  display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px;
+  background: var(--bg); border-right: 1px solid var(--border-light);
+  color: var(--text-muted); font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  white-space: nowrap; transition: all 0.1s ease; flex-shrink: 0;
+}
+.hobbies-pill:hover { color: var(--text); background: var(--bg-muted); }
+.hobbies-pill--active { background: var(--text); color: var(--bg); }
+.hobbies-pill-label { line-height: 1; }
+
+.hobbies-controls-row { display: flex; align-items: center; gap: 8px; }
+.hobbies-status-select { width: auto; min-width: 120px; font-size: 0.75rem; padding: 6px 10px; }
+
+.hobbies-view-toggle { display: flex; gap: 0; border: 2px solid var(--border); }
+.hobbies-view--active { color: var(--bg) !important; background: var(--text) !important; }
+
+.hobbies-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.hobbies-list { display: flex; flex-direction: column; gap: 6px; }
+.hobbies-list .hobbies-item-card { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 14px; }
+.hobbies-list .hobbies-item-top { display: flex; align-items: center; gap: 6px; }
+.hobbies-list .hobbies-item-title { flex: 1; min-width: 0; margin-bottom: 0; }
+.hobbies-list .hobbies-item-rating { margin-top: 0; }
+.hobbies-list .hobbies-item-notes { width: 100%; margin-top: 4px; }
+.hobbies-list .hobbies-item-actions { margin-top: 0; margin-left: auto; }
+
+.hobbies-item-card { padding: 12px; }
+.hobbies-item-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.hobbies-item-title { font-size: 0.85rem; font-weight: 800; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.01em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.hobbies-item-notes { font-size: 0.7rem; color: var(--text-muted); margin-top: 6px; font-family: var(--font-mono); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.hobbies-item-rating { margin-top: 4px; }
+.hobbies-item-actions { display: flex; gap: 4px; margin-top: 8px; justify-content: flex-end; }
+
+.hobbies-status-badge { display: inline-flex; align-items: center; padding: 1px 6px; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-family: var(--font-mono); }
+.hobbies-status--blue { background: #0038FF; color: #fff; }
+.hobbies-status--amber { background: #191919; color: #fff; }
+.hobbies-status--green { background: var(--success); color: #fff; }
+
+.hobbies-stars { display: inline-flex; gap: 2px; }
+.hobbies-star { background: transparent; color: var(--border-light); padding: 0; display: flex; align-items: center; justify-content: center; transition: color 0.1s ease; }
+.hobbies-star:hover { color: var(--text); }
+.hobbies-star--filled { color: var(--text); }
+.hobbies-star--filled svg { fill: var(--text); }
+.hobbies-rating-input { display: flex; align-items: center; gap: 8px; }
+
+@media (max-width: 400px) {
+  .hobbies-grid { grid-template-columns: 1fr; }
+  .hobbies-controls-row { flex-wrap: wrap; }
+}

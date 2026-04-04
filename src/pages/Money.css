@@ -1,0 +1,82 @@
+/* ============================================
+   Money Module — FRAN
+   ============================================ */
+
+.money-overview { margin-bottom: 16px; }
+.money-overview h3 { margin-bottom: 12px; }
+.money-overview-grid { display: flex; gap: 16px; margin-bottom: 12px; }
+.money-overview-stat { display: flex; align-items: flex-start; gap: 10px; flex: 1; }
+.money-overview-stat svg { color: var(--text); flex-shrink: 0; margin-top: 2px; stroke-width: 2.5; }
+.money-stat-value { display: block; font-size: 1.15rem; font-weight: 900; font-family: var(--font-mono); }
+.money-stat-label { display: block; font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+
+.money-progress-bar { width: 100%; height: 6px; background: var(--border-light); overflow: hidden; }
+.money-progress-fill { height: 100%; background: var(--text); transition: width 0.4s ease; }
+.money-progress-fill--complete { background: var(--success); }
+
+.money-tabs { display: flex; gap: 0; margin-bottom: 16px; border: 2px solid var(--border); }
+.money-tab {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 12px; background: transparent; color: var(--text-muted);
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  transition: all 0.1s ease; border-right: 1px solid var(--border-light);
+}
+.money-tab:last-child { border-right: none; }
+.money-tab:hover { color: var(--text); }
+.money-tab--active { background: var(--text); color: var(--bg); }
+
+.money-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.money-section-header h3 { margin-bottom: 0; }
+.money-subheading { margin-top: 20px; margin-bottom: 10px; color: var(--text-muted); font-size: 0.8rem; font-family: var(--font-mono); }
+
+.money-list { display: flex; flex-direction: column; gap: 6px; }
+.money-bill-card { padding: 12px 14px; }
+.money-bill-main { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.money-bill-info { display: flex; flex-direction: column; min-width: 0; }
+.money-bill-name { font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.02em; }
+.money-bill-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; font-family: var(--font-mono); }
+.money-bill-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.money-bill-amount { font-weight: 900; font-size: 1rem; font-family: var(--font-mono); }
+.money-bill-actions { display: flex; gap: 4px; margin-top: 8px; justify-content: flex-end; }
+
+.money-bill--overdue { border-left: 4px solid var(--danger); }
+.money-bill--upcoming { border-left: 4px solid var(--text); }
+.money-bill--not-due { opacity: 0.5; }
+
+.money-badge { display: inline-flex; align-items: center; gap: 4px; padding: 1px 6px; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-family: var(--font-mono); }
+.money-badge--overdue { background: var(--danger); color: #fff; }
+.money-badge--upcoming { background: var(--text); color: var(--bg); }
+
+.money-goal-card { padding: 14px; }
+.money-goal-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+.money-goal-info { display: flex; flex-direction: column; min-width: 0; }
+.money-goal-name { font-weight: 800; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px; text-transform: uppercase; }
+.money-goal-check { color: var(--success); }
+.money-goal-deadline { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; font-family: var(--font-mono); }
+.money-goal-amounts { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
+.money-goal-current { font-weight: 900; font-size: 1rem; font-family: var(--font-mono); }
+.money-goal-target { font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono); }
+.money-goal-pct { display: block; font-size: 0.7rem; font-weight: 700; margin-top: 4px; text-align: right; font-family: var(--font-mono); }
+.money-goal-actions { display: flex; gap: 4px; margin-top: 8px; justify-content: flex-end; align-items: center; }
+
+.money-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px 16px; color: var(--text-dim); }
+.money-empty svg { opacity: 0.2; }
+.money-empty p { font-size: 0.85rem; font-family: var(--font-mono); }
+
+.money-modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
+.money-form-card { width: 100%; max-width: 400px; }
+.money-form-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.money-form-header h3 { margin-bottom: 0; }
+.money-form { display: flex; flex-direction: column; gap: 10px; }
+.money-form-row { display: flex; gap: 0; }
+.money-form-row > * { flex: 1; }
+.money-form-row > *:not(:last-child) { border-right: none; }
+
+.btn-sm { padding: 6px 12px; font-size: 0.75rem; }
+.btn-icon { padding: 6px; }
+
+@media (max-width: 400px) {
+  .money-overview-grid { flex-direction: column; gap: 12px; }
+  .money-form-row { flex-direction: column; gap: 0; }
+  .money-form-row > * { border-right: 2px solid var(--border-light) !important; }
+}

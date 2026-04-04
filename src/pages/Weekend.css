@@ -1,0 +1,50 @@
+/* ============================================
+   Weekend Module — FRAN
+   ============================================ */
+
+.weekend-nav { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px; position: relative; }
+.weekend-nav-label { font-size: 0.9rem; font-weight: 800; min-width: 140px; text-align: center; text-transform: uppercase; letter-spacing: 0.04em; }
+.weekend-nav-this { font-weight: 900; }
+.weekend-today-btn { position: absolute; right: 0; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.weekend-day { margin-bottom: 20px; }
+.weekend-day--today { border-left: 4px solid var(--text); padding-left: 12px; }
+
+.weekend-day-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.weekend-day-info { display: flex; align-items: center; gap: 8px; }
+.weekend-day-info h3 { margin-bottom: 0; }
+.weekend-today-badge { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; background: var(--text); color: var(--bg); padding: 2px 8px; font-family: var(--font-mono); }
+
+.weekend-empty-day { padding: 20px; text-align: center; background: var(--bg); border: 2px dashed var(--border-light); }
+
+.weekend-activities { display: flex; flex-direction: column; gap: 6px; }
+.weekend-activity { padding: 12px; transition: opacity 0.15s ease; }
+.weekend-activity--done { opacity: 0.4; }
+.weekend-activity-main { display: flex; align-items: flex-start; gap: 10px; }
+
+.weekend-check { width: 22px; height: 22px; border: 2px solid var(--border); background: transparent; color: transparent; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.7rem; font-weight: 700; transition: all 0.1s ease; margin-top: 2px; }
+.weekend-check:hover { border-color: var(--text); }
+.weekend-check--done { background: var(--text); border-color: var(--text); color: var(--bg); }
+
+.weekend-activity-body { flex: 1; min-width: 0; }
+.weekend-activity-title { display: block; font-size: 0.9rem; font-weight: 700; line-height: 1.3; }
+.weekend-activity-title--done { text-decoration: line-through; color: var(--text-dim); }
+
+.weekend-activity-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.weekend-meta-item { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono); }
+
+.weekend-tag { display: inline-block; margin-top: 6px; padding: 1px 6px; background: var(--text); color: var(--bg); font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-family: var(--font-mono); }
+
+.weekend-activity-notes { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; padding-top: 8px; border-top: 2px solid var(--border); line-height: 1.4; font-family: var(--font-mono); }
+.weekend-activity-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.weekend-delete-btn:hover { color: var(--danger) !important; }
+
+.weekend-modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+.weekend-form-card { width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; }
+.weekend-form-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.weekend-form { display: flex; flex-direction: column; gap: 12px; }
+.weekend-form-row { display: flex; gap: 0; }
+.weekend-form-row > * { flex: 1; }
+.weekend-form-row > *:not(:last-child) { border-right: none; }
+
+input[type="time"] { color-scheme: light; }
