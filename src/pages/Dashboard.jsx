@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Dumbbell, UtensilsCrossed, CheckSquare, Wallet, Gamepad2, Briefcase, Sun, ChevronRight, Calendar } from 'lucide-react'
-import { format, isToday, isTomorrow, parseISO, startOfWeek, addDays, isBefore } from 'date-fns'
+import { format, isToday, isTomorrow, parseISO, startOfWeek, addDays, isBefore, formatDistanceToNowStrict } from 'date-fns'
+import useMood from '../hooks/useMood'
 import './Dashboard.css'
 
 function loadJSON(key, fallback = []) {
@@ -10,8 +11,101 @@ function loadJSON(key, fallback = []) {
   } catch { return fallback }
 }
 
+/* ---- Weather helpers ---- */
+
+const WEATHER_CACHE_KEY = 'fran-weather-cache'
+const GEO_CACHE_KEY = 'fran-geo-cache'
+const WEATHER_TTL = 30 * 60 * 1000 // 30 minutes
+
+function weatherCodeToEmoji(code) {
+  if (code === 0) return { emoji: '\u2600\uFE0F', label: 'CLEAR' }
+  if (code <= 3) return { emoji: '\u26C5', label: 'CLOUDY' }
+  if (code <= 48) return { emoji: '\uD83C\uDF2B\uFE0F', label: 'FOGGY' }
+  if (code <= 67) return { emoji: '\uD83C\uDF27\uFE0F', label: 'RAIN' }
+  if (code <= 77) return { emoji: '\u2744\uFE0F', label: 'SNOW' }
+  if (code <= 82) return { emoji: '\uD83C\uDF26\uFE0F', label: 'SHOWERS' }
+  return { emoji: '\u26C8\uFE0F', label: 'STORM' }
+}
+
+function useWeather() {
+  const [weather, setWeather] = useState(null)
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  const fetchWeather = useCallback(async (lat, lng) => {
+    try {
+      const res = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto`
+      )
+      const data = await res.json()
+      if (!data.current) throw new Error('No weather data')
+      const result = {
+        temp: Math.round(data.current.temperature_2m),
+        code: data.current.weather_code,
+        fetchedAt: Date.now(),
+      }
+      localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(result))
+      setWeather(result)
+      setLoading(false)
+    } catch (err) {
+      setError('FETCH_FAILED')
+      setLoading(false)
+    }
+  }, [])
+
+  const requestLocation = useCallback(() => {
+    setError(null)
+    setLoading(true)
+
+    // Check cached geo
+    const cachedGeo = localStorage.getItem(GEO_CACHE_KEY)
+    if (cachedGeo) {
+      const { lat, lng } = JSON.parse(cachedGeo)
+      // Check cached weather
+      const cachedWeather = localStorage.getItem(WEATHER_CACHE_KEY)
+      if (cachedWeather) {
+        const parsed = JSON.parse(cachedWeather)
+        if (Date.now() - parsed.fetchedAt < WEATHER_TTL) {
+          setWeather(parsed)
+          setLoading(false)
+          return
+        }
+      }
+      fetchWeather(lat, lng)
+      return
+    }
+
+    if (!navigator.geolocation) {
+      setError('NO_GEO')
+      setLoading(false)
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const geo = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(geo))
+        fetchWeather(geo.lat, geo.lng)
+      },
+      () => {
+        setError('DENIED')
+        setLoading(false)
+      },
+      { timeout: 10000 }
+    )
+  }, [fetchWeather])
+
+  useEffect(() => {
+    requestLocation()
+  }, [requestLocation])
+
+  return { weather, error, loading, retry: requestLocation }
+}
+
 export default function Dashboard() {
   const navigate = useNavigate()
+  const { myMood, partnerMoods, historyStrip, logMood, loading: moodLoading } = useMood()
+  const { weather, error: weatherError, loading: weatherLoading, retry: retryWeather } = useWeather()
   const [data, setData] = useState({ workouts: [], tasks: [], bills: [], mealPlan: null, media: [], groceryItems: [], milestones: [], weekendActivities: [] })
 
   useEffect(() => {
@@ -78,10 +172,88 @@ export default function Dashboard() {
     })
     .slice(0, 4)
 
+  const MOODS = [
+    { emoji: '\uD83D\uDE34', label: 'Tired' },
+    { emoji: '\uD83D\uDE24', label: 'Frustrated' },
+    { emoji: '\uD83D\uDE10', label: 'Neutral' },
+    { emoji: '\uD83D\uDE42', label: 'Good' },
+    { emoji: '\uD83D\uDD25', label: 'Great' },
+  ]
+
+  const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+  // historyStrip is last 7 days starting 6 days ago
+  // We need to figure out labels starting from 6 days ago
+  const todayIdx = (new Date().getDay() + 6) % 7 // 0=Mon
+  const stripLabels = []
+  for (let i = 6; i >= 0; i--) {
+    stripLabels.push(DAY_LABELS[((todayIdx - i + 7) % 7)])
+  }
+
   return (
     <div className="page">
       <h2>Today</h2>
       <p className="text-muted">{format(today, 'EEEE, MMMM d')}</p>
+
+      {/* Mood + Weather Widgets */}
+      <div className="dash-widgets">
+        {/* Mood Check-in */}
+        <div className="card dash-widget dash-mood">
+          <div className="dash-widget-label">MOOD CHECK-IN</div>
+          <div className="dash-mood-picker">
+            {MOODS.map(m => (
+              <button
+                key={m.emoji}
+                className={`dash-mood-btn ${myMood?.mood === m.emoji ? 'active' : ''}`}
+                onClick={() => logMood(m.emoji)}
+                title={m.label}
+              >
+                {m.emoji}
+              </button>
+            ))}
+          </div>
+          {myMood && (
+            <div className="dash-mood-status">
+              <span>YOU: {myMood.mood}</span>
+              <span className="text-muted"> &mdash; {formatDistanceToNowStrict(new Date(myMood.created_at), { addSuffix: false }).toUpperCase()} AGO</span>
+            </div>
+          )}
+          {partnerMoods.map(pm => (
+            <div key={pm.profile_id} className="dash-mood-status">
+              <span>{pm.displayName.toUpperCase()}: {pm.mood}</span>
+              <span className="text-muted"> &mdash; {formatDistanceToNowStrict(new Date(pm.created_at), { addSuffix: false }).toUpperCase()} AGO</span>
+            </div>
+          ))}
+          <div className="dash-mood-history">
+            {historyStrip.map((m, i) => (
+              <div key={i} className="dash-mood-day">
+                <span className="dash-mood-day-label">{stripLabels[i]}</span>
+                <span className={`dash-mood-day-val ${m ? '' : 'empty'}`}>{m || '\u00B7'}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Weather */}
+        <div className="card dash-widget dash-weather">
+          <div className="dash-widget-label">WEATHER</div>
+          {weatherLoading ? (
+            <div className="dash-weather-body">
+              <span className="text-muted">LOADING...</span>
+            </div>
+          ) : weatherError ? (
+            <div className="dash-weather-body">
+              <span className="text-muted">LOCATION NEEDED</span>
+              <button className="btn btn-secondary dash-weather-retry" onClick={retryWeather}>RETRY</button>
+            </div>
+          ) : weather ? (
+            <div className="dash-weather-body">
+              <span className="dash-weather-emoji">{weatherCodeToEmoji(weather.code).emoji}</span>
+              <span className="dash-weather-temp">{weather.temp}&deg;F</span>
+              <span className="dash-weather-desc">{weatherCodeToEmoji(weather.code).label}</span>
+            </div>
+          ) : null}
+        </div>
+      </div>
 
       <div className="dash-grid">
         {/* Tasks Card */}
