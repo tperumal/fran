@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Copy, LogOut, Plus, UserPlus, Users, Crown, User } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Copy, LogOut, Plus, UserPlus, Users, Crown, User, HelpCircle } from 'lucide-react'
 import useAuth from '../hooks/useAuth'
 import useHousehold from '../hooks/useHousehold'
 import './Settings.css'
 
 export default function Settings() {
+  const navigate = useNavigate()
   const { user, profile, signOut } = useAuth()
   const {
     household,
@@ -185,6 +187,16 @@ export default function Settings() {
           </div>
         </>
       )}
+
+      {/* Help */}
+      <div className="card settings-section">
+        <button
+          className="btn btn-secondary settings-help-btn"
+          onClick={() => navigate('/help')}
+        >
+          <HelpCircle size={16} /> HELP
+        </button>
+      </div>
     </div>
   )
 }

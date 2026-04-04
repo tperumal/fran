@@ -1,0 +1,99 @@
+/* ============================================
+   Help Page — FRAN
+   ============================================ */
+
+.help-page {
+  padding-bottom: 40px;
+}
+
+.help-back {
+  margin-bottom: 16px;
+  padding: 6px 0;
+  font-size: 0.75rem;
+}
+
+.help-section {
+  margin-top: 24px;
+  padding: 16px;
+  border: 2px solid var(--border);
+}
+
+.help-section h3 {
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+}
+
+.help-desc {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+/* Module list */
+.help-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.help-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.help-item:last-child {
+  border-bottom: none;
+}
+
+.help-item-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.help-item-desc {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Voice examples */
+.help-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.help-example {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 10px 12px;
+  border: 2px solid var(--border);
+  background: var(--bg-muted);
+}
+
+/* Steps */
+.help-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.help-step {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.help-step strong {
+  color: var(--text);
+  font-weight: 700;
+}
