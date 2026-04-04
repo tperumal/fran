@@ -97,3 +97,21 @@
   color: var(--text);
   font-weight: 700;
 }
+
+.help-link {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 2px solid var(--text);
+  padding-bottom: 1px;
+  transition: all 0.1s ease;
+}
+
+.help-link:hover {
+  background: var(--text);
+  color: var(--bg);
+}

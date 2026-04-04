@@ -97,6 +97,20 @@ export default function Help() {
           <p className="help-step"><strong>WEATHER</strong> — Auto-detects your location and shows current conditions.</p>
         </div>
       </section>
+
+      {/* About the Design */}
+      <section className="help-section">
+        <h3>ABOUT THE DESIGN</h3>
+        <div className="help-steps">
+          <p className="help-step">FRAN uses <strong>brutalist design</strong> — a style rooted in a 1950s architecture movement that rejected decoration in favor of raw, honest structure. The name comes from the French "b&eacute;ton brut" (raw concrete).</p>
+          <p className="help-step">In digital design, brutalism means: sharp corners, thick borders, high contrast, visible structure. No rounded corners, no soft shadows, no gradients. The interface is the design.</p>
+          <p className="help-step">Everything in FRAN is intentional: 0px border-radius, 2px solid black borders, monospace type for data, uppercase headings, black-and-white palette. The only color comes from emojis and functional signals like overdue dates.</p>
+          <p className="help-step">Most life apps look like soft pastel wellness tools. FRAN looks like a punk zine that runs your household. It's a tool, not a toy.</p>
+          <p className="help-step">
+            <a href="https://en.wikipedia.org/wiki/Brutalist_architecture" target="_blank" rel="noopener noreferrer" className="help-link">LEARN MORE ON WIKIPEDIA →</a>
+          </p>
+        </div>
+      </section>
     </div>
   )
 }
