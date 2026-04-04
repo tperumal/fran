@@ -44,6 +44,9 @@
 .tasks-quick-btn { flex-shrink: 0; padding: 10px 14px; }
 .tasks-quick-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+.tasks-sort-row { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+.tasks-sort-select { width: auto; min-width: 100px; font-size: 0.65rem; font-weight: 700; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em; padding: 6px 10px; border: 2px solid var(--border); background: var(--bg); }
+
 .tasks-items { display: flex; flex-direction: column; gap: 6px; }
 .tasks-empty { text-align: center; padding: 40px 0; }
 

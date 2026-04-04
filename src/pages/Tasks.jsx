@@ -70,6 +70,7 @@ export default function Tasks() {
   const [expandedTaskId, setExpandedTaskId] = useState(null)
   const [editDue, setEditDue] = useState('')
   const [editNotes, setEditNotes] = useState('')
+  const [sortBy, setSortBy] = useState('newest')
   const [defaultsCreated, setDefaultsCreated] = useState(false)
   const quickInputRef = useRef(null)
   const listInputRef = useRef(null)
@@ -103,8 +104,23 @@ export default function Tasks() {
   const activeTasks = tasks
     .filter(t => (t.listId || t.list_id) === activeListId)
     .sort((a, b) => {
+      // Completed always at bottom
       if (a.completed !== b.completed) return a.completed ? 1 : -1
-      return new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at)
+      // Then sort by selected method
+      switch (sortBy) {
+        case 'oldest':
+          return new Date(a.createdAt || a.created_at) - new Date(b.createdAt || b.created_at)
+        case 'due':
+          if (!(a.dueDate || a.due_date) && !(b.dueDate || b.due_date)) return 0
+          if (!(a.dueDate || a.due_date)) return 1
+          if (!(b.dueDate || b.due_date)) return -1
+          return new Date(a.dueDate || a.due_date) - new Date(b.dueDate || b.due_date)
+        case 'az':
+          return a.title.localeCompare(b.title)
+        case 'newest':
+        default:
+          return new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at)
+      }
     })
 
   const incompleteCount = (listId) =>
@@ -245,6 +261,15 @@ export default function Tasks() {
         <input ref={quickInputRef} type="text" placeholder="Add a task..." value={quickTitle} onChange={(e) => setQuickTitle(e.target.value)} className="tasks-quick-input" />
         <button type="submit" className="btn btn-primary tasks-quick-btn" disabled={!quickTitle.trim()}><Plus size={18} /></button>
       </form>
+
+      <div className="tasks-sort-row">
+        <select className="tasks-sort-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
+          <option value="newest">NEWEST</option>
+          <option value="oldest">OLDEST</option>
+          <option value="due">DUE DATE</option>
+          <option value="az">A — Z</option>
+        </select>
+      </div>
 
       <div className="tasks-items">
         {activeTasks.length === 0 && (
