@@ -12,6 +12,7 @@ import {
   Mic,
   Menu,
   X,
+  Settings,
 } from 'lucide-react'
 import useVoice from '../hooks/useVoice'
 import { processVoiceInput } from '../lib/ai'
@@ -112,6 +113,9 @@ export default function AppLayout({ children }) {
           >
             <Mic />
           </button>
+          <NavLink to="/settings" className="header-btn" aria-label="Settings">
+            <Settings size={20} />
+          </NavLink>
           <button
             className="header-btn"
             onClick={() => setShowMore(v => !v)}

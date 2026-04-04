@@ -15,6 +15,7 @@ import useAuth from './useAuth'
  * @param {function} opts.toRow - transform local item to DB row (strips client-only fields, adds profile_id)
  * @param {function} opts.fromRow - transform DB row to local item shape
  * @param {string} opts.profileColumn - column name for user ID (default: 'profile_id')
+ * @param {string} opts.householdId - if provided, fetch items for this household too and tag inserts with household_id
  */
 export default function useStore(table, localKey, opts = {}) {
   const { user } = useAuth()
@@ -25,6 +26,7 @@ export default function useStore(table, localKey, opts = {}) {
     toRow = x => x,
     fromRow = x => x,
     profileColumn = 'profile_id',
+    householdId = null,
   } = opts
 
   const isOnline = !!supabase && !!user
@@ -44,7 +46,7 @@ export default function useStore(table, localKey, opts = {}) {
       } catch { /* ignore */ }
       setLoading(false)
     }
-  }, [isOnline, table, JSON.stringify(filters)])
+  }, [isOnline, table, JSON.stringify(filters), householdId])
 
   async function fetchItems() {
     setLoading(true)
@@ -53,8 +55,12 @@ export default function useStore(table, localKey, opts = {}) {
       .select('*')
       .order(orderBy, { ascending })
 
-    // Apply profile filter
-    query = query.eq(profileColumn, user.id)
+    // Apply profile filter — if householdId is set, also include household items
+    if (householdId) {
+      query = query.or(`${profileColumn}.eq.${user.id},household_id.eq.${householdId}`)
+    } else {
+      query = query.eq(profileColumn, user.id)
+    }
 
     // Apply extra filters
     for (const [col, val] of Object.entries(filters)) {
@@ -79,6 +85,7 @@ export default function useStore(table, localKey, opts = {}) {
     if (isOnline) {
       const row = toRow(item)
       row[profileColumn] = user.id
+      if (householdId) row.household_id = householdId
       const { data, error } = await supabase
         .from(table)
         .insert(row)
