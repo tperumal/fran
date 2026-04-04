@@ -1,0 +1,23 @@
+{
+  "appId": "com.toddperumal.fran",
+  "appName": "FRAN",
+  "webDir": "dist",
+  "server": {
+    "url": "https://hive-seven-sable.vercel.app",
+    "cleartext": false
+  },
+  "ios": {
+    "contentInset": "automatic",
+    "scheme": "FRAN"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchShowDuration": 1500,
+      "backgroundColor": "#ffffff"
+    },
+    "StatusBar": {
+      "style": "Dark"
+    }
+  }
+}
