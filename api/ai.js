@@ -55,14 +55,27 @@ Rules:
     }
 
     const data = await response.json()
-    const content = data.content?.[0]?.text || '{}'
+    let content = data.content?.[0]?.text || '{}'
+
+    // Strip markdown code blocks if Claude wrapped the JSON
+    content = content.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
 
     // Parse the JSON response
     let parsed
     try {
       parsed = JSON.parse(content)
     } catch {
-      parsed = { action: 'unknown', response: content }
+      // Try to extract JSON from within the text
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        try {
+          parsed = JSON.parse(jsonMatch[0])
+        } catch {
+          parsed = { action: 'unknown', response: content }
+        }
+      } else {
+        parsed = { action: 'unknown', response: content }
+      }
     }
 
     return res.status(200).json(parsed)

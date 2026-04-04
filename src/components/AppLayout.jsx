@@ -74,10 +74,10 @@ export default function AppLayout({ children }) {
 
   async function handleVoiceResult(text) {
     setProcessing(true)
-    showToast(`"${text}"`, 10000)
+    showToast(`"${text}"`, 2000)
 
     const result = await processVoiceInput(text)
-    console.log('[FRAN Voice]', result)
+    console.log('[FRAN Voice] Action:', result.action, result)
 
     await executeAction(result)
     setProcessing(false)
@@ -117,7 +117,8 @@ export default function AppLayout({ children }) {
           if (isOnline) {
             const row = { name: result.name, category: result.category || 'other', profile_id: user.id }
             if (householdId) row.household_id = householdId
-            await supabase.from('grocery_items').insert(row)
+            const { error } = await supabase.from('grocery_items').insert(row)
+            if (error) { showToast(`Error: ${error.message}`); break }
           }
           showToast(`Grocery added: ${result.name}`)
           navigate('/meals')
