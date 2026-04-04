@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import useStore from '../hooks/useStore'
+import useMealPlans from '../hooks/useMealPlans'
 import {
   CalendarDays,
   BookOpen,
@@ -85,9 +86,7 @@ export default function Meals() {
     'grocery_items', 'hive-grocery-items',
   )
 
-  // Meal plans stay on localStorage for now (complex nested structure)
-  const [mealPlans, setMealPlans] = useState(() => loadJSON('hive-meal-plans', []))
-  useEffect(() => { localStorage.setItem('hive-meal-plans', JSON.stringify(mealPlans)) }, [mealPlans])
+  const { mealPlans, setMealPlans, syncWeek, loading: loadingPlans } = useMealPlans()
 
   return (
     <div className="page meals-page">
@@ -115,6 +114,7 @@ export default function Meals() {
         <PlanTab
           mealPlans={mealPlans}
           setMealPlans={setMealPlans}
+          syncWeek={syncWeek}
           recipes={recipes}
         />
       )}
@@ -135,7 +135,7 @@ export default function Meals() {
 
 // ─── Plan Tab ───────────────────────────────────────────────
 
-function PlanTab({ mealPlans, setMealPlans, recipes }) {
+function PlanTab({ mealPlans, setMealPlans, syncWeek, recipes }) {
   const [weekOffset, setWeekOffset] = useState(0)
   const [editingSlot, setEditingSlot] = useState(null) // { day, meal }
   const [slotInput, setSlotInput] = useState('')
@@ -155,16 +155,20 @@ function PlanTab({ mealPlans, setMealPlans, recipes }) {
   const meals = plan ? plan.meals : emptyWeekMeals()
 
   const updateSlot = useCallback((day, meal, value) => {
+    const updated = { ...meals }
+    updated[day] = { ...updated[day], [meal]: value }
+
     setMealPlans(prev => {
       const existing = prev.find(p => p.weekStart === weekKey)
-      const updated = { ...meals }
-      updated[day] = { ...updated[day], [meal]: value }
       if (existing) {
         return prev.map(p => p.weekStart === weekKey ? { ...p, meals: updated } : p)
       }
       return [...prev, { id: uid(), weekStart: weekKey, meals: updated }]
     })
-  }, [weekKey, meals, setMealPlans])
+
+    // Sync to Supabase
+    syncWeek(weekKey, updated)
+  }, [weekKey, meals, setMealPlans, syncWeek])
 
   const openSlotEditor = (day, meal) => {
     setEditingSlot({ day, meal })
