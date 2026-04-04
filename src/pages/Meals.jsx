@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import useStore from '../hooks/useStore'
 import useMealPlans from '../hooks/useMealPlans'
+import useHousehold from '../hooks/useHousehold'
 import {
   CalendarDays,
   BookOpen,
@@ -61,9 +62,12 @@ function emptyWeekMeals() {
 export default function Meals() {
   const [tab, setTab] = useState('plan')
 
+  const { householdId } = useHousehold()
+
   const { items: recipes, setItems: setRecipes, loading: loadingRecipes } = useStore(
     'recipes', 'hive-recipes',
     {
+      householdId,
       toRow: item => ({
         name: item.name,
         description: item.description || null,
@@ -84,6 +88,7 @@ export default function Meals() {
 
   const { items: groceryItems, setItems: setGroceryItems, loading: loadingGrocery } = useStore(
     'grocery_items', 'hive-grocery-items',
+    { householdId }
   )
 
   const { mealPlans, setMealPlans, syncWeek, loading: loadingPlans } = useMealPlans()

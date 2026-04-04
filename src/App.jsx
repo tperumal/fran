@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './hooks/useAuth'
+import { HouseholdProvider } from './hooks/useHousehold'
 import AuthGate from './components/AuthGate'
 import AppLayout from './components/AppLayout'
 import Tasks from './pages/Tasks'
@@ -17,6 +18,7 @@ export default function App() {
   return (
     <AuthProvider>
       <AuthGate fallback={<Auth />}>
+        <HouseholdProvider>
         <AppLayout>
           <Routes>
             <Route path="/" element={<Dashboard />} />
@@ -30,6 +32,7 @@ export default function App() {
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </AppLayout>
+        </HouseholdProvider>
       </AuthGate>
     </AuthProvider>
   )

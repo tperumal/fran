@@ -4,6 +4,7 @@ import {
 } from 'lucide-react'
 import { formatDistanceToNow, isPast, isToday, parseISO } from 'date-fns'
 import useStore from '../hooks/useStore'
+import useHousehold from '../hooks/useHousehold'
 import './Tasks.css'
 
 const DEFAULT_LISTS = [
@@ -27,9 +28,12 @@ function isDueOverdue(dueDate) {
 }
 
 export default function Tasks() {
+  const { householdId } = useHousehold()
+
   const { items: lists, addItem: addList, deleteItem: deleteList, loading: loadingLists } = useStore(
     'task_lists', 'hive-task-lists',
     {
+      householdId,
       toRow: item => ({ name: item.name }),
       fromRow: row => ({ ...row, icon: '📋' }),
     }

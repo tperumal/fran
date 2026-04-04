@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import supabase from '../lib/supabase'
 import useAuth from './useAuth'
+import useHousehold from './useHousehold'
 
 const LOCAL_KEY = 'hive-meal-plans'
 const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
@@ -41,6 +42,7 @@ function dbToLocal(plan, items) {
 
 export default function useMealPlans() {
   const { user } = useAuth()
+  const { householdId } = useHousehold()
   const isOnline = !!supabase && !!user
 
   const [mealPlans, setMealPlans] = useState([])
@@ -57,11 +59,18 @@ export default function useMealPlans() {
 
   async function fetchPlans() {
     setLoading(true)
-    const { data: plans } = await supabase
+    let query = supabase
       .from('meal_plans')
       .select('*')
-      .eq('profile_id', user.id)
       .order('week_start', { ascending: false })
+
+    if (householdId) {
+      query = query.or(`profile_id.eq.${user.id},household_id.eq.${householdId}`)
+    } else {
+      query = query.eq('profile_id', user.id)
+    }
+
+    const { data: plans } = await query
 
     if (!plans || plans.length === 0) {
       setMealPlans([])
@@ -110,9 +119,11 @@ export default function useMealPlans() {
     if (existing) {
       planId = existing.id
     } else {
+      const row = { profile_id: user.id, week_start: weekKey }
+      if (householdId) row.household_id = householdId
       const { data: newPlan } = await supabase
         .from('meal_plans')
-        .insert({ profile_id: user.id, week_start: weekKey })
+        .insert(row)
         .select()
         .single()
       if (!newPlan) return

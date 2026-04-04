@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import { format, getDate, getDaysInMonth, parseISO } from 'date-fns'
 import useStore from '../hooks/useStore'
+import useHousehold from '../hooks/useHousehold'
 import './Money.css'
 
 const BILL_CATEGORIES = [
@@ -54,9 +55,12 @@ const EMPTY_BILL = { name: '', amount: '', dueDay: 1, frequency: 'monthly', cate
 const EMPTY_GOAL = { name: '', targetAmount: '', currentAmount: 0, deadline: '' }
 
 export default function Money() {
+  const { householdId } = useHousehold()
+
   const { items: bills, addItem: addBill, updateItem: updateBill, deleteItem: deleteBill, loading: loadingBills } = useStore(
     'bills', 'hive-bills',
     {
+      householdId,
       toRow: item => ({
         name: item.name,
         amount: Number(item.amount),
@@ -75,6 +79,7 @@ export default function Money() {
   const { items: goals, addItem: addGoal, updateItem: updateGoal, deleteItem: deleteGoal, loading: loadingGoals } = useStore(
     'savings_goals', 'hive-savings-goals',
     {
+      householdId,
       toRow: item => ({
         name: item.name,
         target_amount: Number(item.targetAmount || item.target_amount),

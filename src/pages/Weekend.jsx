@@ -7,6 +7,7 @@ import {
   format, addWeeks, startOfWeek, addDays, isSameDay
 } from 'date-fns'
 import useStore from '../hooks/useStore'
+import useHousehold from '../hooks/useHousehold'
 import './Weekend.css'
 
 const TAGS = ['Date Night', 'Outdoors', 'Social', 'Chill', 'Errands', 'Family', 'Adventure']
@@ -38,9 +39,11 @@ export default function Weekend() {
   const isThisWeekend = weekOffset === 0
   const today = new Date()
 
+  const { householdId } = useHousehold()
   const { items: activities, addItem, updateItem, deleteItem, loading } = useStore(
     'weekend_activities',
     'hive-weekend-activities',
+    { householdId }
   )
 
   // Filter to current week
