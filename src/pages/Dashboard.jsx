@@ -84,6 +84,32 @@ export default function Dashboard() {
       <p className="text-muted">{format(today, 'EEEE, MMMM d')}</p>
 
       <div className="dash-grid">
+        {/* Tasks Card */}
+        <div className="card dash-card" onClick={() => navigate('/tasks')}>
+          <div className="dash-card-header">
+            <CheckSquare size={18} />
+            <span>Tasks</span>
+            <ChevronRight size={16} className="dash-chevron" />
+          </div>
+          {pendingTasks.length > 0 ? (
+            <div className="dash-card-body">
+              {pendingTasks.map(t => (
+                <div key={t.id} className="dash-task-item">
+                  <span className="dash-task-dot" />
+                  <span>{t.title}</span>
+                  {t.dueDate && (
+                    <span className={`dash-due ${isBefore(parseISO(t.dueDate), today) ? 'overdue' : ''}`}>
+                      {isToday(parseISO(t.dueDate)) ? 'Today' : isTomorrow(parseISO(t.dueDate)) ? 'Tomorrow' : format(parseISO(t.dueDate), 'MMM d')}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted">All caught up!</p>
+          )}
+        </div>
+
         {/* Fitness Card */}
         <div className="card dash-card" onClick={() => navigate('/fitness')}>
           <div className="dash-card-header">
@@ -122,29 +148,30 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Tasks Card */}
-        <div className="card dash-card" onClick={() => navigate('/tasks')}>
+        {/* Career Card */}
+        <div className="card dash-card" onClick={() => navigate('/career')}>
           <div className="dash-card-header">
-            <CheckSquare size={18} />
-            <span>Tasks</span>
+            <Briefcase size={18} />
+            <span>Career</span>
             <ChevronRight size={16} className="dash-chevron" />
           </div>
-          {pendingTasks.length > 0 ? (
+          {activeGoals.length > 0 ? (
             <div className="dash-card-body">
-              {pendingTasks.map(t => (
-                <div key={t.id} className="dash-task-item">
+              {activeGoals.map(g => (
+                <div key={g.id} className="dash-task-item">
                   <span className="dash-task-dot" />
-                  <span>{t.title}</span>
-                  {t.dueDate && (
-                    <span className={`dash-due ${isBefore(parseISO(t.dueDate), today) ? 'overdue' : ''}`}>
-                      {isToday(parseISO(t.dueDate)) ? 'Today' : isTomorrow(parseISO(t.dueDate)) ? 'Tomorrow' : format(parseISO(t.dueDate), 'MMM d')}
-                    </span>
-                  )}
+                  <span>{g.title}</span>
                 </div>
               ))}
             </div>
+          ) : recentMilestones.length > 0 ? (
+            <div className="dash-card-body">
+              {recentMilestones.map(m => (
+                <p key={m.id} className="text-muted" style={{ fontSize: '0.85rem' }}>{m.title}</p>
+              ))}
+            </div>
           ) : (
-            <p className="text-muted">All caught up!</p>
+            <p className="text-muted">Track your wins</p>
           )}
         </div>
 
@@ -185,33 +212,6 @@ export default function Dashboard() {
             </div>
           ) : (
             <p className="text-muted">Nothing in progress</p>
-          )}
-        </div>
-
-        {/* Career Card */}
-        <div className="card dash-card" onClick={() => navigate('/career')}>
-          <div className="dash-card-header">
-            <Briefcase size={18} />
-            <span>Career</span>
-            <ChevronRight size={16} className="dash-chevron" />
-          </div>
-          {activeGoals.length > 0 ? (
-            <div className="dash-card-body">
-              {activeGoals.map(g => (
-                <div key={g.id} className="dash-task-item">
-                  <span className="dash-task-dot" />
-                  <span>{g.title}</span>
-                </div>
-              ))}
-            </div>
-          ) : recentMilestones.length > 0 ? (
-            <div className="dash-card-body">
-              {recentMilestones.map(m => (
-                <p key={m.id} className="text-muted" style={{ fontSize: '0.85rem' }}>{m.title}</p>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted">Track your wins</p>
           )}
         </div>
 

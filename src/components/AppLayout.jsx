@@ -22,16 +22,16 @@ import supabase from '../lib/supabase'
 
 const ALL_NAV_ITEMS = [
   { id: 'dashboard', to: '/', label: 'Home', icon: LayoutDashboard },
+  { id: 'tasks', to: '/tasks', label: 'Tasks', icon: CheckSquare },
   { id: 'fitness', to: '/fitness', label: 'Fitness', icon: Dumbbell },
   { id: 'meals', to: '/meals', label: 'Meals', icon: UtensilsCrossed },
-  { id: 'tasks', to: '/tasks', label: 'Tasks', icon: CheckSquare },
+  { id: 'career', to: '/career', label: 'Career', icon: Briefcase },
   { id: 'money', to: '/money', label: 'Money', icon: Wallet },
   { id: 'hobbies', to: '/hobbies', label: 'Hobbies', icon: Gamepad2 },
-  { id: 'career', to: '/career', label: 'Career', icon: Briefcase },
   { id: 'weekend', to: '/weekend', label: 'Weekend', icon: Sun },
 ]
 
-const DEFAULT_PINNED = ['dashboard', 'tasks', 'fitness', 'meals']
+const DEFAULT_PINNED = ['tasks', 'fitness', 'meals', 'career']
 const NAV_KEY = 'hive-nav-pinned'
 
 function loadPinned() {
