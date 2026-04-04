@@ -43,7 +43,20 @@ export default function Weekend() {
   const { items: activities, addItem, updateItem, deleteItem, loading } = useStore(
     'weekend_activities',
     'hive-weekend-activities',
-    { householdId }
+    {
+      householdId,
+      toRow: item => ({
+        week_key: item.week_key || item.weekKey,
+        title: item.title,
+        day: item.day,
+        time: item.time || null,
+        location: item.location || null,
+        who: item.who || 'both',
+        tag: item.tag || null,
+        notes: item.notes || null,
+        done: item.done || false,
+      }),
+    }
   )
 
   // Filter to current week

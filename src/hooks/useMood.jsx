@@ -41,7 +41,7 @@ export default function useMood() {
       .order('created_at', { ascending: false })
 
     if (householdId) {
-      todayQuery = todayQuery.eq('household_id', householdId)
+      todayQuery = todayQuery.or(`profile_id.eq.${user.id},household_id.eq.${householdId}`)
     } else {
       todayQuery = todayQuery.eq('profile_id', user.id)
     }
