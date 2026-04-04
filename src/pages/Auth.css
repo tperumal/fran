@@ -1,0 +1,93 @@
+/* ============================================
+   Auth Page — FRAN
+   ============================================ */
+
+.auth-page {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--bg);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 360px;
+}
+
+.auth-logo {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.auth-tagline {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+}
+
+.auth-tabs {
+  display: flex;
+  border: 2px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 10px;
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: all 0.1s ease;
+  border-right: 1px solid var(--border-light);
+}
+
+.auth-tab:last-child {
+  border-right: none;
+}
+
+.auth-tab--active {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-error {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--danger);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.auth-confirm {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--success);
+  font-weight: 700;
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.auth-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

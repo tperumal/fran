@@ -542,6 +542,28 @@ input::placeholder, textarea::placeholder {
   background: var(--bg-muted);
 }
 
+/* ---- Auth Loading ---- */
+
+.auth-loading {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+.auth-loading-logo {
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  animation: pulse-text 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
 /* ---- Utility ---- */
 
 .sr-only {
