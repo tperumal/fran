@@ -15,7 +15,10 @@ import {
   Settings,
 } from 'lucide-react'
 import useVoice from '../hooks/useVoice'
+import useAuth from '../hooks/useAuth'
+import useHousehold from '../hooks/useHousehold'
 import { processVoiceInput } from '../lib/ai'
+import supabase from '../lib/supabase'
 
 const ALL_NAV_ITEMS = [
   { id: 'dashboard', to: '/', label: 'Home', icon: LayoutDashboard },
@@ -49,21 +52,168 @@ function savePinned(ids) {
 export default function AppLayout({ children }) {
   const location = useLocation()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const { householdId } = useHousehold()
   const { isListening, transcript, startListening, stopListening, error } = useVoice()
   const [pinnedIds, setPinnedIds] = useState(loadPinned)
   const [showMore, setShowMore] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [toast, setToast] = useState(null)
+  const [processing, setProcessing] = useState(false)
   const sheetRef = useRef(null)
+  const toastTimer = useRef(null)
 
   useEffect(() => { savePinned(pinnedIds) }, [pinnedIds])
 
+  // Process voice input
   useEffect(() => {
-    if (!isListening && transcript) {
-      processVoiceInput(transcript, { currentPath: location.pathname }).then(
-        (result) => { console.log('[FRAN Voice]', result) }
-      )
+    if (!isListening && transcript && !processing) {
+      handleVoiceResult(transcript)
     }
-  }, [isListening, transcript, location.pathname])
+  }, [isListening, transcript])
+
+  async function handleVoiceResult(text) {
+    setProcessing(true)
+    showToast(`"${text}"`, 10000)
+
+    const result = await processVoiceInput(text)
+    console.log('[FRAN Voice]', result)
+
+    await executeAction(result)
+    setProcessing(false)
+  }
+
+  async function executeAction(result) {
+    const { action } = result
+    const isOnline = !!supabase && !!user
+
+    try {
+      switch (action) {
+        case 'navigate':
+          navigate(result.to)
+          showToast(`Opened ${result.to.replace('/', '') || 'home'}`)
+          break
+
+        case 'add_task': {
+          if (isOnline) {
+            // Find the matching list
+            const { data: lists } = await supabase
+              .from('task_lists')
+              .select('id, name')
+              .eq('profile_id', user.id)
+            const list = lists?.find(l => l.name.toLowerCase() === (result.list || 'personal').toLowerCase()) || lists?.[0]
+            if (list) {
+              const row = { list_id: list.id, title: result.title, created_by: user.id }
+              if (householdId) row.household_id = householdId
+              await supabase.from('tasks').insert(row)
+            }
+          }
+          showToast(`Task added: ${result.title}`)
+          navigate('/tasks')
+          break
+        }
+
+        case 'add_grocery': {
+          if (isOnline) {
+            const row = { name: result.name, category: result.category || 'other', profile_id: user.id }
+            if (householdId) row.household_id = householdId
+            await supabase.from('grocery_items').insert(row)
+          }
+          showToast(`Grocery added: ${result.name}`)
+          navigate('/meals')
+          break
+        }
+
+        case 'add_weekend': {
+          if (isOnline) {
+            const now = new Date()
+            const weekStart = new Date(now)
+            weekStart.setDate(now.getDate() - ((now.getDay() + 6) % 7)) // Monday
+            const weekKey = weekStart.toISOString().split('T')[0]
+            const row = {
+              title: result.title,
+              day: result.day || 'sat',
+              time: result.time || null,
+              tag: result.tag || null,
+              week_key: weekKey,
+              profile_id: user.id,
+            }
+            if (householdId) row.household_id = householdId
+            await supabase.from('weekend_activities').insert(row)
+          }
+          showToast(`Weekend: ${result.title}`)
+          navigate('/weekend')
+          break
+        }
+
+        case 'add_bill': {
+          if (isOnline) {
+            const row = {
+              name: result.name,
+              amount: Number(result.amount),
+              due_day: Number(result.dueDay || 1),
+              frequency: result.frequency || 'monthly',
+              category: 'Other',
+              profile_id: user.id,
+            }
+            if (householdId) row.household_id = householdId
+            await supabase.from('bills').insert(row)
+          }
+          showToast(`Bill added: ${result.name}`)
+          navigate('/money')
+          break
+        }
+
+        case 'add_milestone': {
+          if (isOnline) {
+            await supabase.from('career_milestones').insert({
+              title: result.title,
+              category: result.category || 'achievement',
+              date: new Date().toISOString().split('T')[0],
+              profile_id: user.id,
+            })
+          }
+          showToast(`Milestone: ${result.title}`)
+          navigate('/career')
+          break
+        }
+
+        case 'add_media': {
+          if (isOnline) {
+            await supabase.from('media_items').insert({
+              title: result.title,
+              media_type: result.type || 'movie',
+              status: result.status || 'want',
+              profile_id: user.id,
+            })
+          }
+          showToast(`Added: ${result.title}`)
+          navigate('/hobbies')
+          break
+        }
+
+        case 'plan_meal': {
+          showToast(`Meal planned: ${result.name} for ${result.day} ${result.meal}`)
+          navigate('/meals')
+          break
+        }
+
+        case 'unknown':
+        default:
+          showToast(result.response || "Didn't catch that. Try again.")
+          break
+      }
+    } catch (err) {
+      console.error('[FRAN Voice] Action error:', err)
+      showToast('Something went wrong.')
+    }
+  }
+
+  function showToast(message, duration = 3000) {
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+    setToast(message)
+    toastTimer.current = setTimeout(() => setToast(null), duration)
+  }
 
   useEffect(() => {
     if (!showMore) return
@@ -106,10 +256,11 @@ export default function AppLayout({ children }) {
         </div>
         <div className="app-header-right">
           <button
-            className={`header-btn ${isListening ? 'listening' : ''}`}
+            className={`header-btn ${isListening ? 'listening' : ''} ${processing ? 'processing' : ''}`}
             onClick={handleVoiceToggle}
             aria-label={isListening ? 'Stop listening' : 'Voice'}
-            title={error || (isListening ? 'Listening...' : 'Voice command')}
+            title={error || (isListening ? 'Listening...' : processing ? 'Processing...' : 'Voice command')}
+            disabled={processing}
           >
             <Mic />
           </button>
@@ -127,6 +278,13 @@ export default function AppLayout({ children }) {
       </header>
 
       <main className="app-main">{children}</main>
+
+      {/* Voice Toast */}
+      {toast && (
+        <div className="voice-toast">
+          <span>{toast}</span>
+        </div>
+      )}
 
       {/* More Sheet */}
       {showMore && (
