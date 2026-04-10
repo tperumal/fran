@@ -3,7 +3,7 @@
   "appName": "FRAN",
   "webDir": "dist",
   "server": {
-    "url": "https://hive-seven-sable.vercel.app",
+    "url": "https://app.onlyfran.co",
     "cleartext": false
   },
   "ios": {
