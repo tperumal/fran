@@ -253,7 +253,7 @@ export default function AppLayout({ children }) {
     <div className="app-layout">
       <header className="app-header">
         <div className="app-header-left">
-          <h1>FRAN</h1>
+          <NavLink to="/" className="app-header-brand"><h1>FRAN</h1></NavLink>
         </div>
         <div className="app-header-right">
           <button
