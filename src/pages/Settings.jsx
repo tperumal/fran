@@ -170,16 +170,16 @@ export default function Settings() {
             <form onSubmit={handleJoin} className="settings-form">
               <input
                 type="text"
-                placeholder="6-character invite code"
+                placeholder="8-character invite code"
                 value={joinCode}
-                onChange={e => setJoinCode(e.target.value.toUpperCase().slice(0, 6))}
-                maxLength={6}
+                onChange={e => setJoinCode(e.target.value.toUpperCase().slice(0, 8))}
+                maxLength={8}
                 style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.2em', textTransform: 'uppercase' }}
               />
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={joining || joinCode.length !== 6}
+                disabled={joining || joinCode.length !== 8}
               >
                 {joining ? 'Joining...' : 'Join'}
               </button>

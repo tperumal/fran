@@ -27,6 +27,7 @@ export default function useStore(table, localKey, opts = {}) {
     fromRow = x => x,
     profileColumn = 'profile_id',
     householdId = null,
+    skipProfileFilter = false,
   } = opts
 
   const isOnline = !!supabase && !!user
@@ -55,8 +56,10 @@ export default function useStore(table, localKey, opts = {}) {
       .select('*')
       .order(orderBy, { ascending })
 
-    // Apply profile filter — if householdId is set, also include household items
-    if (householdId) {
+    // Apply profile filter — skipProfileFilter relies on RLS instead
+    if (skipProfileFilter) {
+      // Let RLS handle access control (e.g. tasks accessed via task_lists)
+    } else if (householdId) {
       query = query.or(`${profileColumn}.eq.${user.id},household_id.eq.${householdId}`)
     } else {
       query = query.eq(profileColumn, user.id)
@@ -85,7 +88,7 @@ export default function useStore(table, localKey, opts = {}) {
     if (isOnline) {
       const row = toRow(item)
       row[profileColumn] = user.id
-      if (householdId) row.household_id = householdId
+      if (householdId && !skipProfileFilter) row.household_id = householdId
       const { data, error } = await supabase
         .from(table)
         .insert(row)

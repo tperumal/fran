@@ -43,6 +43,7 @@ export default function Tasks() {
     'tasks', 'hive-tasks',
     {
       profileColumn: 'created_by',
+      skipProfileFilter: !!householdId,
       toRow: item => ({
         list_id: item.listId || item.list_id,
         title: item.title,

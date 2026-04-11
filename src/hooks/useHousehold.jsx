@@ -88,16 +88,29 @@ export function HouseholdProvider({ children }) {
   const joinHousehold = useCallback(async (code) => {
     if (!isOnline) return null
     const normalized = code.trim().toLowerCase()
-    if (normalized.length !== 6) throw new Error('Invite code must be 6 characters')
+    if (normalized.length !== 8) throw new Error('Invite code must be 8 characters')
 
-    const { data: matches } = await supabase
+    // Fetch all households and match by code (first 8 chars of UUID, no dashes)
+    const { data: allHouseholds } = await supabase
       .from('households')
       .select('id, name')
-      .ilike('id', `${normalized}%`)
 
-    if (!matches || matches.length === 0) throw new Error('No household found with that code')
+    const target = (allHouseholds || []).find(h =>
+      h.id.replace(/-/g, '').substring(0, 8).toLowerCase() === normalized
+    )
 
-    const target = matches[0]
+    if (!target) throw new Error('No household found with that code')
+
+    // Check not already a member
+    const { data: existing } = await supabase
+      .from('household_members')
+      .select('profile_id')
+      .eq('household_id', target.id)
+      .eq('profile_id', user.id)
+      .maybeSingle()
+
+    if (existing) throw new Error('You are already a member of this household')
+
     const { error: joinErr } = await supabase
       .from('household_members')
       .insert({ household_id: target.id, profile_id: user.id, role: 'member' })
@@ -119,7 +132,7 @@ export function HouseholdProvider({ children }) {
     setMembers([])
   }, [isOnline, household, user])
 
-  const inviteCode = household ? household.id.substring(0, 6).toUpperCase() : null
+  const inviteCode = household ? household.id.replace(/-/g, '').substring(0, 8).toUpperCase() : null
   const householdId = household?.id || null
 
   return (
