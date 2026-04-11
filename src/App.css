@@ -107,8 +107,8 @@ h3 {
 .app-header {
   display: flex;
   align-items: center;
-  padding: 6px 16px 6px;
-  padding-top: env(safe-area-inset-top, 0px);
+  padding: 8px 16px 6px;
+  padding-top: env(safe-area-inset-top, 8px);
   flex-shrink: 0;
   z-index: 50;
   background: var(--bg);
@@ -175,7 +175,7 @@ h3 {
 
 .app-main {
   flex: 1;
-  padding: 16px 16px calc(var(--nav-height) + var(--safe-bottom) + 16px);
+  padding: 16px 16px calc(var(--nav-height) + 16px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
@@ -305,8 +305,8 @@ input::placeholder, textarea::placeholder {
   bottom: 0;
   left: 0;
   right: 0;
-  height: calc(var(--nav-height) + var(--safe-bottom));
-  padding-bottom: var(--safe-bottom);
+  height: var(--nav-height);
+  padding-bottom: 0;
   background: var(--bg);
   border-top: 2px solid var(--border);
   display: flex;
@@ -380,7 +380,7 @@ input::placeholder, textarea::placeholder {
   max-width: 600px;
   max-height: 75vh;
   overflow-y: auto;
-  padding: 20px 16px calc(var(--nav-height) + var(--safe-bottom) + 16px);
+  padding: 20px 16px calc(var(--nav-height) + 16px);
   animation: sheet-up 0.15s ease;
 }
 
@@ -558,7 +558,7 @@ input::placeholder, textarea::placeholder {
 
 .voice-toast {
   position: fixed;
-  bottom: calc(var(--nav-height) + var(--safe-bottom) + 12px);
+  bottom: calc(var(--nav-height) + 12px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 200;

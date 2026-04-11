@@ -9,4 +9,13 @@ class FRANViewController: CAPBridgeViewController {
         webView?.scrollView.contentInsetAdjustmentBehavior = .never
         webView?.scrollView.bounces = false
     }
+
+    // Show status bar with dark text (for white background)
+    override var prefersStatusBarHidden: Bool {
+        return false
+    }
+
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .darkContent
+    }
 }
