@@ -102,15 +102,16 @@ export function HouseholdProvider({ children }) {
     const normalized = code.trim().toLowerCase()
     if (normalized.length !== 8) throw new Error('Invite code must be 8 characters')
 
-    // Fetch all households and match by code (first 8 chars of UUID, no dashes)
-    const { data: allHouseholds } = await supabase
-      .from('households')
-      .select('id, name')
+    // Use RPC to bypass RLS for lookup (partner isn't a member yet)
+    const { data: matches, error: rpcErr } = await supabase
+      .rpc('find_household_by_code', { invite_code: normalized })
 
-    const target = (allHouseholds || []).find(h =>
-      h.id.replace(/-/g, '').substring(0, 8).toLowerCase() === normalized
-    )
+    if (rpcErr) {
+      console.error('[FRAN] Join lookup error:', rpcErr)
+      throw new Error('Could not look up invite code')
+    }
 
+    const target = matches?.[0]
     if (!target) throw new Error('No household found with that code')
 
     // Check not already a member
