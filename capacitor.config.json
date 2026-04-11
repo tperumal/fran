@@ -8,7 +8,7 @@
     "allowNavigation": ["app.onlyfran.co"]
   },
   "ios": {
-    "contentInset": "automatic",
+    "contentInset": "always",
     "scheme": "FRAN"
   },
   "plugins": {
