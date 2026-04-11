@@ -46,10 +46,11 @@ body {
   background: var(--bg);
   color: var(--text);
   line-height: 1.5;
-  min-height: 100dvh;
-  overflow-x: hidden;
+  height: 100dvh;
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
-  overscroll-behavior: none;
+  position: fixed;
+  width: 100%;
 }
 
 #root {
@@ -93,9 +94,14 @@ h3 {
 /* ---- Layout ---- */
 
 .app-layout {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  overflow: hidden;
 }
 
 .app-header {
@@ -103,8 +109,7 @@ h3 {
   align-items: center;
   padding: 14px 16px 10px;
   padding-top: calc(env(safe-area-inset-top, 0px) + 14px);
-  position: sticky;
-  top: 0;
+  flex-shrink: 0;
   z-index: 50;
   background: var(--bg);
   border-bottom: 2px solid var(--border);
@@ -172,6 +177,8 @@ h3 {
   flex: 1;
   padding: 16px 16px calc(var(--nav-height) + var(--safe-bottom) + 16px);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 /* ---- Page ---- */
