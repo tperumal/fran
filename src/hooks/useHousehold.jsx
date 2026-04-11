@@ -68,21 +68,33 @@ export function HouseholdProvider({ children }) {
 
   const createHousehold = useCallback(async (name) => {
     if (!isOnline) return null
+
+    // Ensure profile exists (required by foreign key)
+    await supabase
+      .from('profiles')
+      .upsert({ id: user.id, display_name: user.user_metadata?.display_name || user.email?.split('@')[0] || 'User' })
+
     const id = crypto.randomUUID()
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('households')
       .insert({ id, name, created_by: user.id })
-      .select()
-      .single()
-    if (error) throw error
+    if (error) {
+      console.error('[FRAN] Create household error:', error)
+      throw new Error(error.message)
+    }
 
     const { error: memErr } = await supabase
       .from('household_members')
       .insert({ household_id: id, profile_id: user.id, role: 'owner' })
-    if (memErr) throw memErr
+    if (memErr) {
+      console.error('[FRAN] Add member error:', memErr)
+      // Clean up the household if member insert fails
+      await supabase.from('households').delete().eq('id', id)
+      throw new Error(memErr.message)
+    }
 
     await fetchHousehold()
-    return data
+    return { id, name }
   }, [isOnline, user, fetchHousehold])
 
   const joinHousehold = useCallback(async (code) => {
