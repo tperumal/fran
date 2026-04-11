@@ -62,7 +62,7 @@ export default function Tasks() {
     }
   )
 
-  const [activeListId, setActiveListId] = useState(null)
+  const [activeListId, setActiveListId] = useState(() => localStorage.getItem('fran-active-list-id'))
   const [quickTitle, setQuickTitle] = useState('')
   const [showNewList, setShowNewList] = useState(false)
   const [newListName, setNewListName] = useState('')
@@ -90,12 +90,17 @@ export default function Tasks() {
     }
   }, [loadingLists, lists.length])
 
-  // Set active list to first list
+  // Set active list — restore from localStorage or fall back to first list
   useEffect(() => {
-    if (!activeListId && lists.length > 0) {
+    if (lists.length > 0 && (!activeListId || !lists.find(l => l.id === activeListId))) {
       setActiveListId(lists[0].id)
     }
   }, [lists, activeListId])
+
+  // Persist active list selection
+  useEffect(() => {
+    if (activeListId) localStorage.setItem('fran-active-list-id', activeListId)
+  }, [activeListId])
 
   useEffect(() => {
     if (showNewList && listInputRef.current) listInputRef.current.focus()
@@ -152,10 +157,10 @@ export default function Tasks() {
   async function handleToggle(taskId) {
     const task = tasks.find(t => t.id === taskId)
     if (task) {
+      const now = !task.completed ? new Date().toISOString() : null
       await updateTask(taskId, {
         completed: !task.completed,
-        completedAt: !task.completed ? new Date().toISOString() : null,
-        completed_at: !task.completed ? new Date().toISOString() : null,
+        completed_at: now,
       })
     }
   }
