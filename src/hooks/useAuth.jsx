@@ -42,7 +42,21 @@ export function AuthProvider({ children }) {
       .select('*')
       .eq('id', userId)
       .single()
-    setProfile(data)
+
+    if (data) {
+      setProfile(data)
+    } else {
+      // Auto-create profile if missing
+      const session = await supabase.auth.getSession()
+      const meta = session?.data?.session?.user?.user_metadata
+      const displayName = meta?.display_name || meta?.email?.split('@')[0] || 'User'
+      const { data: created } = await supabase
+        .from('profiles')
+        .upsert({ id: userId, display_name: displayName })
+        .select()
+        .single()
+      setProfile(created)
+    }
     setLoading(false)
   }
 
