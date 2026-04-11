@@ -4,7 +4,8 @@
   "webDir": "dist",
   "server": {
     "url": "https://app.onlyfran.co",
-    "cleartext": false
+    "cleartext": false,
+    "allowNavigation": ["app.onlyfran.co"]
   },
   "ios": {
     "contentInset": "automatic",
