@@ -257,18 +257,6 @@ export default function AppLayout({ children }) {
         </div>
         <div className="app-header-right">
           <button
-            className={`header-btn ${isListening ? 'listening' : ''} ${processing ? 'processing' : ''}`}
-            onClick={handleVoiceToggle}
-            aria-label={isListening ? 'Stop listening' : 'Voice'}
-            title={error || (isListening ? 'Listening...' : processing ? 'Processing...' : 'Voice command')}
-            disabled={processing}
-          >
-            <Mic />
-          </button>
-          <NavLink to="/settings" className="header-btn" aria-label="Settings">
-            <Settings size={20} />
-          </NavLink>
-          <button
             className="header-btn"
             onClick={() => setShowMore(v => !v)}
             aria-label="All modules"
@@ -311,27 +299,34 @@ export default function AppLayout({ children }) {
             </div>
 
             {!editing ? (
-              <div className="more-grid">
-                {ALL_NAV_ITEMS.map(item => {
-                  const Icon = item.icon
-                  const isActive = item.to === '/'
-                    ? location.pathname === '/'
-                    : location.pathname.startsWith(item.to)
-                  const isPinned = pinnedIds.includes(item.id)
-                  return (
-                    <button
-                      key={item.id}
-                      className={`more-grid-item ${isActive ? 'more-grid-item--active' : ''}`}
-                      onClick={() => handleNavFromMore(item.to)}
-                    >
-                      <div className="more-grid-icon">
-                        <Icon size={22} />
-                      </div>
-                      <span className="more-grid-label">{item.label}</span>
-                      {isPinned && <span className="more-pinned-dot" />}
-                    </button>
-                  )
-                })}
+              <div>
+                <div className="more-grid">
+                  {ALL_NAV_ITEMS.map(item => {
+                    const Icon = item.icon
+                    const isActive = item.to === '/'
+                      ? location.pathname === '/'
+                      : location.pathname.startsWith(item.to)
+                    const isPinned = pinnedIds.includes(item.id)
+                    return (
+                      <button
+                        key={item.id}
+                        className={`more-grid-item ${isActive ? 'more-grid-item--active' : ''}`}
+                        onClick={() => handleNavFromMore(item.to)}
+                      >
+                        <div className="more-grid-icon">
+                          <Icon size={22} />
+                        </div>
+                        <span className="more-grid-label">{item.label}</span>
+                        {isPinned && <span className="more-pinned-dot" />}
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="more-footer">
+                  <button className="more-footer-link" onClick={() => handleNavFromMore('/settings')}>
+                    <Settings size={16} /> SETTINGS
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="more-edit">

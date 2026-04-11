@@ -470,6 +470,34 @@ input::placeholder, textarea::placeholder {
   background: var(--accent);
 }
 
+.more-footer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 2px solid var(--border-light);
+}
+
+.more-footer-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.more-footer-link:hover {
+  background: var(--bg-muted);
+}
+
 /* Edit mode */
 
 .more-edit {
