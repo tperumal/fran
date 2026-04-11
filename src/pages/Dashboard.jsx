@@ -3,13 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { Dumbbell, UtensilsCrossed, CheckSquare, Wallet, Gamepad2, Briefcase, Sun, ChevronRight, Pencil, X, Eye, EyeOff } from 'lucide-react'
 import { format, isToday, isTomorrow, parseISO, startOfWeek, addDays, isBefore, formatDistanceToNowStrict } from 'date-fns'
 import useMood from '../hooks/useMood'
+import useStore from '../hooks/useStore'
+import useFitnessData from '../hooks/useFitnessData'
+import useMealPlans from '../hooks/useMealPlans'
+import useHousehold from '../hooks/useHousehold'
 import './Dashboard.css'
-
-function loadJSON(key, fallback = []) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) || fallback
-  } catch { return fallback }
-}
 
 /* ---- Weather helpers ---- */
 
@@ -93,45 +91,51 @@ function saveVisible(ids) {
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const { householdId } = useHousehold()
   const { myMood, partnerMoods, historyStrip, logMood, loading: moodLoading, moodError } = useMood()
   const { weather, error: weatherError, loading: weatherLoading, retry: retryWeather } = useWeather()
-  const [data, setData] = useState({ workouts: [], tasks: [], bills: [], mealPlan: null, media: [], groceryItems: [], milestones: [], weekendActivities: [] })
+  const { workouts } = useFitnessData()
+  const { items: tasks } = useStore('tasks', 'hive-tasks', {
+    profileColumn: 'created_by',
+    fromRow: row => ({ ...row, listId: row.list_id, dueDate: row.due_date, completedAt: row.completed_at }),
+    householdId,
+  })
+  const { items: bills } = useStore('bills', 'hive-bills', {
+    fromRow: row => ({ ...row, dueDay: row.due_day }),
+    householdId,
+  })
+  const { items: media } = useStore('media_items', 'hive-media-items', { householdId })
+  const { items: groceryItems } = useStore('grocery_items', 'hive-grocery-items', { householdId })
+  const { items: milestones } = useStore('career_milestones', 'hive-career-milestones', { householdId })
+  const { items: weekendActivities } = useStore('weekend_activities', 'hive-weekend-activities', {
+    filters: { week_key: format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd') },
+    householdId,
+  })
+  const { mealPlans } = useMealPlans()
   const [visible, setVisible] = useState(loadVisible)
   const [editing, setEditing] = useState(false)
 
   useEffect(() => { saveVisible(visible) }, [visible])
 
-  useEffect(() => {
-    const workouts = loadJSON('hive-workouts')
-    const tasks = loadJSON('hive-tasks')
-    const bills = loadJSON('hive-bills')
-    const media = loadJSON('hive-media-items')
-    const groceryItems = loadJSON('hive-grocery-items')
-    const milestones = loadJSON('hive-career-milestones')
-    const weekendActivities = loadJSON('hive-weekend-activities')
-    const plans = loadJSON('hive-meal-plans')
-    const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd')
-    const mealPlan = plans.find(p => p.weekStart === weekStart) || null
-    setData({ workouts, tasks, bills, mealPlan, media, groceryItems, milestones, weekendActivities })
-  }, [])
-
   const today = new Date()
   const dayKey = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][today.getDay()]
-  const lastWorkout = data.workouts.sort((a, b) => new Date(b.date) - new Date(a.date))[0]
-  const todayMeals = data.mealPlan?.meals?.[dayKey] || {}
+  const currentWeekStart = format(startOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd')
+  const currentPlan = mealPlans.find(p => p.weekStart === currentWeekStart)
+  const todayMeals = currentPlan?.meals?.[dayKey] || {}
   const hasMeals = todayMeals.breakfast || todayMeals.lunch || todayMeals.dinner
-  const pendingTasks = data.tasks.filter(t => !t.completed).sort((a, b) => {
-    if (!a.dueDate) return 1; if (!b.dueDate) return -1
-    return new Date(a.dueDate) - new Date(b.dueDate)
+  const lastWorkout = [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date))[0]
+  const pendingTasks = tasks.filter(t => !t.completed).sort((a, b) => {
+    if (!a.dueDate && !a.due_date) return 1; if (!b.dueDate && !b.due_date) return -1
+    return new Date(a.dueDate || a.due_date) - new Date(b.dueDate || b.due_date)
   }).slice(0, 5)
   const currentDay = today.getDate()
-  const upcomingBills = data.bills.filter(b => { const diff = b.dueDay - currentDay; return diff >= 0 && diff <= 7 }).sort((a, b) => a.dueDay - b.dueDay)
-  const currentMedia = data.media.filter(m => m.status === 'in_progress').slice(0, 3)
-  const uncheckedGroceries = data.groceryItems.filter(g => !g.checked).length
-  const recentMilestones = data.milestones.filter(m => m.category !== 'goal' || m.completed).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 2)
-  const activeGoals = data.milestones.filter(m => m.category === 'goal' && !m.completed).slice(0, 3)
+  const upcomingBills = bills.filter(b => { const dd = b.dueDay || b.due_day; const diff = dd - currentDay; return diff >= 0 && diff <= 7 }).sort((a, b) => (a.dueDay || a.due_day) - (b.dueDay || b.due_day))
+  const currentMedia = media.filter(m => m.status === 'in_progress').slice(0, 3)
+  const uncheckedGroceries = groceryItems.filter(g => !g.checked).length
+  const recentMilestones = milestones.filter(m => m.category !== 'goal' || m.completed).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 2)
+  const activeGoals = milestones.filter(m => m.category === 'goal' && !m.completed).slice(0, 3)
   const weekStart = format(startOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd')
-  const weekendPlans = data.weekendActivities.filter(a => a.weekKey === weekStart && !a.done).sort((a, b) => {
+  const weekendPlans = weekendActivities.filter(a => (a.weekKey || a.week_key) === weekStart && !a.done).sort((a, b) => {
     if (a.day !== b.day) return a.day === 'sat' ? -1 : 1; return (a.time || '').localeCompare(b.time || '')
   }).slice(0, 4)
 
