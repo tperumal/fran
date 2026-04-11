@@ -22,7 +22,7 @@
   --success: #00cc55;
   --radius: 0px;
   --radius-sm: 0px;
-  --nav-height: 60px;
+  --nav-height: 50px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --font-mono: 'Space Mono', 'SF Mono', 'Fira Code', monospace;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -107,8 +107,8 @@ h3 {
 .app-header {
   display: flex;
   align-items: center;
-  padding: 14px 16px 10px;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 14px);
+  padding: 8px 16px 8px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 4px);
   flex-shrink: 0;
   z-index: 50;
   background: var(--bg);
