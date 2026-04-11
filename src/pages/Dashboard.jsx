@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Dumbbell, UtensilsCrossed, CheckSquare, Wallet, Gamepad2, Briefcase, Sun, ChevronRight, Pencil, X, Eye, EyeOff } from 'lucide-react'
+import { Dumbbell, UtensilsCrossed, CheckSquare, Wallet, Gamepad2, Briefcase, Sun, ChevronRight, Pencil, X, Eye, EyeOff, Heart, CloudSun } from 'lucide-react'
 import { format, isToday, isTomorrow, parseISO, startOfWeek, addDays, isBefore, formatDistanceToNowStrict } from 'date-fns'
 import useMood from '../hooks/useMood'
 import useStore from '../hooks/useStore'
@@ -33,11 +33,19 @@ function useWeather() {
   const fetchWeather = useCallback(async (lat, lng) => {
     try {
       const res = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=1`
       )
       const data = await res.json()
       if (!data.current) throw new Error('No weather data')
-      const result = { temp: Math.round(data.current.temperature_2m), code: data.current.weather_code, fetchedAt: Date.now() }
+      const result = {
+        temp: Math.round(data.current.temperature_2m),
+        code: data.current.weather_code,
+        humidity: data.current.relative_humidity_2m,
+        wind: Math.round(data.current.wind_speed_10m),
+        high: data.daily?.temperature_2m_max?.[0] ? Math.round(data.daily.temperature_2m_max[0]) : null,
+        low: data.daily?.temperature_2m_min?.[0] ? Math.round(data.daily.temperature_2m_min[0]) : null,
+        fetchedAt: Date.now(),
+      }
       localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(result))
       setWeather(result)
       setLoading(false)
@@ -164,9 +172,9 @@ export default function Dashboard() {
   return (
     <div className="page">
       <div className="dash-title-row">
-        <div>
+        <div className="dash-title-inline">
           <h2>Today</h2>
-          <p className="text-muted">{format(today, 'EEEE, MMMM d')}</p>
+          <span className="text-muted">{format(today, 'EEEE, MMMM d')}</span>
         </div>
         <button className={`header-btn ${editing ? 'active' : ''}`} onClick={() => setEditing(e => !e)} title="Edit dashboard">
           {editing ? <X size={18} /> : <Pencil size={18} />}
@@ -197,7 +205,7 @@ export default function Dashboard() {
         <div className="dash-widgets">
           {isVis('mood') && (
             <div className="card dash-widget dash-mood">
-              <div className="dash-widget-label">MOOD CHECK-IN</div>
+              <div className="dash-card-header"><Heart size={18} /><span>Mood</span></div>
               <div className="dash-mood-picker">
                 {MOODS.map(m => (
                   <button key={m.emoji} className={`dash-mood-btn ${myMood?.mood === m.emoji ? 'active' : ''}`} onClick={() => logMood(m.emoji)} title={m.label}>
@@ -205,12 +213,6 @@ export default function Dashboard() {
                   </button>
                 ))}
               </div>
-              {myMood && (
-                <div className="dash-mood-status">
-                  <span>YOU: {myMood.mood}</span>
-                  <span className="text-muted"> &mdash; {formatDistanceToNowStrict(new Date(myMood.created_at), { addSuffix: false }).toUpperCase()} AGO</span>
-                </div>
-              )}
               {partnerMoods.map(pm => (
                 <div key={pm.profile_id} className="dash-mood-status">
                   <span>{pm.displayName.toUpperCase()}: {pm.mood}</span>
@@ -230,7 +232,7 @@ export default function Dashboard() {
 
           {isVis('weather') && (
             <div className="card dash-widget dash-weather">
-              <div className="dash-widget-label">WEATHER</div>
+              <div className="dash-card-header"><CloudSun size={18} /><span>Weather</span></div>
               {weatherLoading ? (
                 <div className="dash-weather-body"><span className="text-muted">LOADING...</span></div>
               ) : weatherError ? (
@@ -239,10 +241,18 @@ export default function Dashboard() {
                   <button className="btn btn-secondary dash-weather-retry" onClick={retryWeather}>RETRY</button>
                 </div>
               ) : weather ? (
-                <div className="dash-weather-body">
-                  <span className="dash-weather-emoji">{weatherCodeToEmoji(weather.code).emoji}</span>
-                  <span className="dash-weather-temp">{weather.temp}&deg;F</span>
-                  <span className="dash-weather-desc">{weatherCodeToEmoji(weather.code).label}</span>
+                <div className="dash-weather-detail">
+                  <div className="dash-weather-main">
+                    <span className="dash-weather-emoji">{weatherCodeToEmoji(weather.code).emoji}</span>
+                    <span className="dash-weather-temp">{weather.temp}&deg;F</span>
+                  </div>
+                  <div className="dash-weather-desc">{weatherCodeToEmoji(weather.code).label}</div>
+                  <div className="dash-weather-stats">
+                    {weather.high != null && <span>H: {weather.high}&deg;</span>}
+                    {weather.low != null && <span>L: {weather.low}&deg;</span>}
+                    <span>HUMIDITY: {weather.humidity}%</span>
+                    <span>WIND: {weather.wind} MPH</span>
+                  </div>
                 </div>
               ) : null}
             </div>

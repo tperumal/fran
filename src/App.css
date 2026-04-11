@@ -321,7 +321,7 @@ input::placeholder, textarea::placeholder {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  color: var(--text-dim);
+  color: var(--text);
   text-decoration: none;
   font-size: 0.55rem;
   font-weight: 700;
