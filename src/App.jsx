@@ -11,6 +11,7 @@ import Money from './pages/Money'
 import Hobbies from './pages/Hobbies'
 import Career from './pages/Career'
 import Weekend from './pages/Weekend'
+import Goals from './pages/Goals'
 import Settings from './pages/Settings'
 import Dashboard from './pages/Dashboard'
 import Auth from './pages/Auth'
@@ -38,6 +39,7 @@ function AppInner() {
           <Route path="/hobbies" element={<Hobbies />} />
           <Route path="/career" element={<Career />} />
           <Route path="/weekend" element={<Weekend />} />
+          <Route path="/goals" element={<Goals />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/help" element={<Help />} />
         </Routes>

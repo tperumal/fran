@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   Settings,
+  Target,
 } from 'lucide-react'
 import useVoice from '../hooks/useVoice'
 import useAuth from '../hooks/useAuth'
@@ -29,6 +30,7 @@ const ALL_NAV_ITEMS = [
   { id: 'money', to: '/money', label: 'Money', icon: Wallet },
   { id: 'hobbies', to: '/hobbies', label: 'Hobbies', icon: Gamepad2 },
   { id: 'weekend', to: '/weekend', label: 'Weekend', icon: Sun },
+  { id: 'goals', to: '/goals', label: 'Goals', icon: Target },
 ]
 
 const DEFAULT_PINNED = ['tasks', 'fitness', 'meals', 'career']
