@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Dumbbell, UtensilsCrossed, CheckSquare, Wallet, Gamepad2, Briefcase, Sun, ChevronRight, Pencil, X, Eye, EyeOff, Heart, CloudSun } from 'lucide-react'
+import { Dumbbell, UtensilsCrossed, CheckSquare, Wallet, Gamepad2, Briefcase, Sun, ChevronRight, Pencil, X, Eye, EyeOff, Heart, CloudSun, Target } from 'lucide-react'
 import { format, isToday, isTomorrow, parseISO, startOfWeek, addDays, isBefore, formatDistanceToNowStrict } from 'date-fns'
 import useMood from '../hooks/useMood'
 import useStore from '../hooks/useStore'
@@ -82,7 +82,7 @@ function useWeather() {
 
 const DASH_VIS_KEY = 'fran-dash-visible'
 const ALL_WIDGETS = ['mood', 'weather']
-const ALL_MODULES = ['tasks', 'fitness', 'meals', 'career', 'money', 'hobbies', 'weekend']
+const ALL_MODULES = ['tasks', 'fitness', 'meals', 'career', 'money', 'hobbies', 'weekend', 'goals']
 const DEFAULT_VISIBLE = [...ALL_WIDGETS, ...ALL_MODULES]
 
 function loadVisible() {
@@ -119,6 +119,7 @@ export default function Dashboard() {
     filters: { week_key: format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd') },
     householdId,
   })
+  const { items: goals } = useStore('goals', 'hive-goals', { householdId })
   const { mealPlans } = useMealPlans()
   const [visible, setVisible] = useState(loadVisible)
   const [editing, setEditing] = useState(false)
@@ -166,7 +167,7 @@ export default function Dashboard() {
 
   const ITEM_LABELS = {
     mood: 'MOOD', weather: 'WEATHER', tasks: 'TASKS', fitness: 'FITNESS',
-    meals: 'MEALS', career: 'CAREER', money: 'MONEY', hobbies: 'HOBBIES', weekend: 'WEEKEND',
+    meals: 'MEALS', career: 'CAREER', money: 'MONEY', hobbies: 'HOBBIES', weekend: 'WEEKEND', goals: 'GOALS',
   }
 
   return (
@@ -340,6 +341,21 @@ export default function Dashboard() {
             {weekendPlans.length > 0 ? (
               <div className="dash-card-body">{weekendPlans.map(a => (<div key={a.id} className="dash-task-item"><span className="dash-task-dot" /><span>{a.title}</span>{a.time && <span className="dash-due">{a.time}</span>}</div>))}</div>
             ) : <p className="text-muted">No plans yet</p>}
+          </div>
+        )}
+
+        {isVis('goals') && (
+          <div className="card dash-card" onClick={() => navigate('/goals')}>
+            <div className="dash-card-header"><Target size={18} /><span>Goals</span><ChevronRight size={16} className="dash-chevron" /></div>
+            {goals.length > 0 ? (
+              <div className="dash-card-body">
+                {goals.slice(0, 3).map(g => (
+                  <div key={g.id} className="dash-task-item">
+                    <span className="dash-task-dot" /><span>{g.title}</span>
+                  </div>
+                ))}
+              </div>
+            ) : <p className="text-muted">Set your goals</p>}
           </div>
         )}
       </div>
