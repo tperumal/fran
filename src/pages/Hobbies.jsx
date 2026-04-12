@@ -90,7 +90,6 @@ export default function Hobbies() {
       await updateItem(editingId, {
         title: form.title,
         media_type: form.type,
-        type: form.type,
         status: form.status,
         rating: form.rating,
         notes: form.notes || null,
