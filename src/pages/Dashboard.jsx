@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Dumbbell, UtensilsCrossed, CheckSquare, Wallet, Gamepad2, Briefcase, Sun, ChevronRight, Pencil, X, Eye, EyeOff, Heart, CloudSun, Target } from 'lucide-react'
+import { Dumbbell, UtensilsCrossed, CheckSquare, Wallet, Gamepad2, Briefcase, Sun, ChevronRight, Pencil, X, Eye, EyeOff, Heart, CloudSun, Target, CalendarDays } from 'lucide-react'
 import { format, isToday, isTomorrow, parseISO, startOfWeek, addDays, isBefore, formatDistanceToNowStrict } from 'date-fns'
 import useMood from '../hooks/useMood'
 import useStore from '../hooks/useStore'
@@ -82,7 +82,7 @@ function useWeather() {
 
 const DASH_VIS_KEY = 'fran-dash-visible'
 const ALL_WIDGETS = ['mood', 'weather']
-const ALL_MODULES = ['tasks', 'fitness', 'meals', 'career', 'money', 'hobbies', 'weekend', 'goals']
+const ALL_MODULES = ['tasks', 'fitness', 'meals', 'career', 'money', 'hobbies', 'weekend', 'goals', 'week']
 const DEFAULT_VISIBLE = [...ALL_WIDGETS, ...ALL_MODULES]
 
 function loadVisible() {
@@ -120,6 +120,7 @@ export default function Dashboard() {
     householdId,
   })
   const { items: goals } = useStore('goals', 'hive-goals', { householdId })
+  const { items: calendarEvents } = useStore('calendar_events', 'hive-calendar-events', { householdId })
   const { mealPlans } = useMealPlans()
   const [visible, setVisible] = useState(loadVisible)
   const [editing, setEditing] = useState(false)
@@ -148,6 +149,14 @@ export default function Dashboard() {
     if (a.day !== b.day) return a.day === 'sat' ? -1 : 1; return (a.time || '').localeCompare(b.time || '')
   }).slice(0, 4)
 
+  const todayDow = (today.getDay() + 6) % 7
+  const todayWeekKey = format(startOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd')
+  const todayEvents = calendarEvents.filter(e => {
+    if (e.day_of_week !== todayDow) return false
+    if (e.recurring) return true
+    return e.week_key === todayWeekKey
+  })
+
   const MOODS = [
     { emoji: '\uD83D\uDE34', label: 'Tired' },
     { emoji: '\uD83D\uDE24', label: 'Frustrated' },
@@ -167,7 +176,7 @@ export default function Dashboard() {
 
   const ITEM_LABELS = {
     mood: 'MOOD', weather: 'WEATHER', tasks: 'TASKS', fitness: 'FITNESS',
-    meals: 'MEALS', career: 'CAREER', money: 'MONEY', hobbies: 'HOBBIES', weekend: 'WEEKEND', goals: 'GOALS',
+    meals: 'MEALS', career: 'CAREER', money: 'MONEY', hobbies: 'HOBBIES', weekend: 'WEEKEND', goals: 'GOALS', week: 'WEEK',
   }
 
   return (
@@ -356,6 +365,22 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : <p className="text-muted">Set your goals</p>}
+          </div>
+        )}
+
+        {isVis('week') && (
+          <div className="card dash-card" onClick={() => navigate('/week')}>
+            <div className="dash-card-header"><CalendarDays size={18} /><span>Week</span><ChevronRight size={16} className="dash-chevron" /></div>
+            {todayEvents.length > 0 ? (
+              <div className="dash-card-body">
+                {todayEvents.slice(0, 3).map(e => (
+                  <div key={e.id} className="dash-task-item">
+                    <span className="dash-task-dot" /><span>{e.title}</span>
+                    {e.time && <span className="dash-due">{e.time}</span>}
+                  </div>
+                ))}
+              </div>
+            ) : <p className="text-muted">Nothing scheduled today</p>}
           </div>
         )}
       </div>
