@@ -561,25 +561,26 @@ function GroceryTab({ items, setItems, addItem: addStoreItem, updateItem: update
     items.filter(it => it.checked).forEach(it => deleteStoreItem(it.id))
   }
 
-  const generateFromPlan = () => {
+  const generateFromPlan = async () => {
     // Get the current week plan
     const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd')
     const plan = mealPlans.find(p => p.weekStart === weekStart)
-    if (!plan) return
+    if (!plan || !plan.meals) return
 
     const plannedNames = new Set()
     DAYS.forEach(d => {
+      if (!plan.meals[d]) return
       MEAL_TYPES.forEach(m => {
         if (plan.meals[d][m]) plannedNames.add(plan.meals[d][m])
       })
     })
 
-    // Match planned meal names to recipes and extract ingredients
+    // Match planned meal names to recipes (case-insensitive) and extract ingredients
     const newIngredients = new Set()
     const existingNames = new Set(items.map(it => it.name.toLowerCase()))
     plannedNames.forEach(name => {
-      const recipe = recipes.find(r => r.name === name)
-      if (recipe) {
+      const recipe = recipes.find(r => r.name.toLowerCase() === name.toLowerCase())
+      if (recipe && Array.isArray(recipe.ingredients)) {
         recipe.ingredients.forEach(ing => {
           if (!existingNames.has(ing.toLowerCase())) {
             newIngredients.add(ing)
@@ -589,14 +590,15 @@ function GroceryTab({ items, setItems, addItem: addStoreItem, updateItem: update
     })
 
     if (newIngredients.size === 0) return
-    const newItems = [...newIngredients].map(ing => ({
-      id: uid(),
-      name: ing,
-      category: 'other',
-      checked: false,
-      fromMealPlan: true,
-    }))
-    setItems(prev => [...prev, ...newItems])
+    for (const ing of newIngredients) {
+      await addStoreItem({
+        id: uid(),
+        name: ing,
+        category: 'other',
+        checked: false,
+        fromMealPlan: true,
+      })
+    }
   }
 
   const grouped = useMemo(() => {
