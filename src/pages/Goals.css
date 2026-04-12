@@ -1,0 +1,55 @@
+/* ============================================
+   Goals Module — FRAN
+   ============================================ */
+
+.goals-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 16px; }
+
+.goals-empty { text-align: center; padding: 48px 20px; color: var(--text-dim); }
+.goals-empty svg { margin-bottom: 12px; opacity: 0.15; }
+.goals-empty p { font-size: 0.85rem; color: var(--text-muted); font-family: var(--font-mono); }
+
+.goals-list { display: flex; flex-direction: column; gap: 6px; }
+
+.goal-card { padding: 12px; cursor: pointer; }
+
+.goal-card-main { display: flex; align-items: center; gap: 12px; }
+.goal-card-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid var(--accent); background: var(--accent); color: #fff; }
+.goal-card-body { flex: 1; min-width: 0; }
+.goal-card-title { display: block; font-size: 0.9rem; font-weight: 700; line-height: 1.3; text-transform: uppercase; letter-spacing: 0.01em; }
+.goal-card-desc { display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.goal-card-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.goal-chevron { color: var(--text-dim); }
+
+.goal-expanded { margin-top: 12px; padding-top: 12px; border-top: 2px solid var(--border); }
+
+/* Sub-items */
+.goal-subitems { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.goal-subitem { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.goal-subitem-text { font-size: 0.85rem; font-family: var(--font-mono); flex: 1; min-width: 0; }
+
+/* Habit checkbox */
+.goal-checkbox { width: 20px; height: 20px; border: 2px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; transition: all 0.1s ease; }
+.goal-checkbox:hover { border-color: var(--text); }
+.goal-checkbox--checked { background: var(--text); border-color: var(--text); color: var(--bg); }
+
+/* Note bullet */
+.goal-bullet { width: 6px; height: 6px; background: var(--text-dim); flex-shrink: 0; }
+
+.goal-subitem-delete { color: var(--text-dim); flex-shrink: 0; transition: color 0.1s ease; }
+.goal-subitem-delete:hover { color: var(--danger); }
+
+/* Add sub-item row */
+.goal-add-subitem { display: flex; gap: 0; margin-bottom: 12px; }
+.goal-add-subitem input { flex: 1; font-size: 0.8rem; border-right: none; }
+.goal-add-subitem select { width: 90px; font-size: 0.75rem; border-right: none; }
+.goal-add-subitem button { flex-shrink: 0; }
+
+/* Edit form */
+.goal-edit-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.goal-edit-form input,
+.goal-edit-form textarea { font-size: 0.8rem; }
+
+/* Goal action buttons */
+.goal-item-btns { display: flex; gap: 8px; }
+.goal-item-btns .btn { font-size: 0.75rem; gap: 4px; }
+.goal-delete-btn:hover { color: var(--danger) !important; }
