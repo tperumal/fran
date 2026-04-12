@@ -14,6 +14,7 @@ import {
   X,
   Settings,
   Target,
+  CalendarDays,
 } from 'lucide-react'
 import useVoice from '../hooks/useVoice'
 import useAuth from '../hooks/useAuth'
@@ -31,6 +32,7 @@ const ALL_NAV_ITEMS = [
   { id: 'hobbies', to: '/hobbies', label: 'Hobbies', icon: Gamepad2 },
   { id: 'weekend', to: '/weekend', label: 'Weekend', icon: Sun },
   { id: 'goals', to: '/goals', label: 'Goals', icon: Target },
+  { id: 'week', to: '/week', label: 'Week', icon: CalendarDays },
 ]
 
 const DEFAULT_PINNED = ['tasks', 'fitness', 'meals', 'career']
