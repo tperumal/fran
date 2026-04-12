@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import useStore from '../hooks/useStore'
 import useMealPlans from '../hooks/useMealPlans'
 import useHousehold from '../hooks/useHousehold'
+import ShareToggle from '../components/ShareToggle'
 import {
   CalendarDays,
   BookOpen,
@@ -64,7 +65,7 @@ export default function Meals() {
 
   const { householdId } = useHousehold()
 
-  const { items: recipes, setItems: setRecipes, addItem: addRecipe, deleteItem: deleteRecipeItem, loading: loadingRecipes } = useStore(
+  const { items: recipes, setItems: setRecipes, addItem: addRecipe, updateItem: updateRecipeItem, deleteItem: deleteRecipeItem, loading: loadingRecipes } = useStore(
     'recipes', 'hive-recipes',
     {
       householdId,
@@ -124,7 +125,7 @@ export default function Meals() {
         />
       )}
       {tab === 'recipes' && (
-        <RecipesTab recipes={recipes} addRecipe={addRecipe} deleteRecipe={deleteRecipeItem} />
+        <RecipesTab recipes={recipes} addRecipe={addRecipe} updateRecipe={updateRecipeItem} deleteRecipe={deleteRecipeItem} householdId={householdId} />
       )}
       {tab === 'grocery' && (
         <GroceryTab
@@ -295,7 +296,7 @@ function PlanTab({ mealPlans, setMealPlans, syncWeek, recipes }) {
 
 // ─── Recipes Tab ────────────────────────────────────────────
 
-function RecipesTab({ recipes, addRecipe, deleteRecipe }) {
+function RecipesTab({ recipes, addRecipe, updateRecipe, deleteRecipe, householdId }) {
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [viewing, setViewing] = useState(null) // recipe id
@@ -376,13 +377,18 @@ function RecipesTab({ recipes, addRecipe, deleteRecipe }) {
               <p className="recipe-instructions">{viewedRecipe.instructions}</p>
             </>
           )}
-          <button
-            className="btn btn-secondary"
-            style={{ marginTop: 16 }}
-            onClick={() => handleDelete(viewedRecipe.id)}
-          >
-            <Trash2 size={14} /> Delete Recipe
-          </button>
+          <div style={{ marginTop: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
+            <ShareToggle
+              shared={!!viewedRecipe.household_id}
+              onToggle={(share) => updateRecipe(viewedRecipe.id, { household_id: share ? householdId : null })}
+            />
+            <button
+              className="btn btn-secondary"
+              onClick={() => handleDelete(viewedRecipe.id)}
+            >
+              <Trash2 size={14} /> Delete Recipe
+            </button>
+          </div>
         </div>
       </div>
     )

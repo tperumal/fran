@@ -4,6 +4,8 @@ import {
   LayoutGrid, List
 } from 'lucide-react'
 import useStore from '../hooks/useStore'
+import useHousehold from '../hooks/useHousehold'
+import ShareToggle from '../components/ShareToggle'
 import './Hobbies.css'
 
 const TYPES = [
@@ -25,10 +27,12 @@ const EMPTY_FORM = {
 }
 
 export default function Hobbies() {
+  const { householdId } = useHousehold()
   const { items, addItem, updateItem, deleteItem, loading } = useStore(
     'media_items',
     'hive-media-items',
     {
+      householdId,
       fromRow: row => ({
         ...row,
         type: row.media_type || row.type,
@@ -237,6 +241,10 @@ export default function Hobbies() {
               </div>
               {item.notes && <p className="hobbies-item-notes">{item.notes}</p>}
               <div className="hobbies-item-actions">
+                <ShareToggle
+                  shared={!!item.household_id}
+                  onToggle={(share) => updateItem(item.id, { household_id: share ? householdId : null })}
+                />
                 <button className="btn btn-ghost btn-icon" onClick={() => openForm(item)}><Pencil size={14} /></button>
                 <button className="btn btn-ghost btn-icon" onClick={() => deleteItem(item.id)}><Trash2 size={14} /></button>
               </div>

@@ -277,6 +277,33 @@ button {
 
 /* ---- Inputs ---- */
 
+/* ---- Share Toggle ---- */
+
+.share-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.1s ease;
+  flex-shrink: 0;
+}
+
+.share-toggle:hover {
+  color: var(--text);
+}
+
+.share-toggle--on {
+  color: var(--accent);
+}
+
+.share-toggle--on:hover {
+  color: var(--text);
+}
+
 input, textarea, select {
   font-family: var(--font-mono);
   font-size: 0.85rem;

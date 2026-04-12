@@ -5,6 +5,8 @@ import {
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import useStore from '../hooks/useStore'
+import useHousehold from '../hooks/useHousehold'
+import ShareToggle from '../components/ShareToggle'
 import './Career.css'
 
 const CATEGORIES = [
@@ -22,10 +24,12 @@ const EMPTY_FORM = {
 }
 
 export default function Career() {
+  const { householdId } = useHousehold()
   const { items: milestones, addItem, updateItem, deleteItem, loading } = useStore(
     'career_milestones',
     'hive-career-milestones',
     {
+      householdId,
       orderBy: 'date',
       ascending: false,
     }
@@ -232,6 +236,10 @@ export default function Career() {
                   </span>
                 </div>
                 <div className="career-item-actions">
+                  <ShareToggle
+                    shared={!!item.household_id}
+                    onToggle={(share) => updateItem(item.id, { household_id: share ? householdId : null })}
+                  />
                   {item.category === 'goal' && (
                     <button
                       className={`career-goal-check ${item.completed ? 'career-goal-check--done' : ''}`}

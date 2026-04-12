@@ -5,6 +5,7 @@ import {
 import { formatDistanceToNow, isPast, isToday, parseISO } from 'date-fns'
 import useStore from '../hooks/useStore'
 import useHousehold from '../hooks/useHousehold'
+import ShareToggle from '../components/ShareToggle'
 import './Tasks.css'
 
 const DEFAULT_LISTS = [
@@ -30,7 +31,7 @@ function isDueOverdue(dueDate) {
 export default function Tasks() {
   const { householdId } = useHousehold()
 
-  const { items: lists, addItem: addList, deleteItem: deleteList, loading: loadingLists } = useStore(
+  const { items: lists, addItem: addList, updateItem: updateList, deleteItem: deleteList, loading: loadingLists } = useStore(
     'task_lists', 'hive-task-lists',
     {
       householdId,
@@ -329,10 +330,18 @@ export default function Tasks() {
         })}
       </div>
 
-      {lists.find((l) => l.id === activeListId) && lists.length > 1 && (
-        <button className="btn btn-ghost tasks-delete-list-btn" onClick={() => handleDeleteList(activeListId)}>
-          <Trash2 size={14} /> Delete this list
-        </button>
+      {lists.find((l) => l.id === activeListId) && (
+        <div className="tasks-list-actions">
+          <ShareToggle
+            shared={!!lists.find(l => l.id === activeListId)?.household_id}
+            onToggle={(share) => updateList(activeListId, { household_id: share ? householdId : null })}
+          />
+          {lists.length > 1 && (
+            <button className="btn btn-ghost tasks-delete-list-btn" onClick={() => handleDeleteList(activeListId)}>
+              <Trash2 size={14} /> Delete this list
+            </button>
+          )}
+        </div>
       )}
     </div>
   )
