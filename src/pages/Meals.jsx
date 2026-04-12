@@ -64,7 +64,7 @@ export default function Meals() {
 
   const { householdId } = useHousehold()
 
-  const { items: recipes, setItems: setRecipes, loading: loadingRecipes } = useStore(
+  const { items: recipes, setItems: setRecipes, addItem: addRecipe, deleteItem: deleteRecipeItem, loading: loadingRecipes } = useStore(
     'recipes', 'hive-recipes',
     {
       householdId,
@@ -86,7 +86,7 @@ export default function Meals() {
     }
   )
 
-  const { items: groceryItems, setItems: setGroceryItems, loading: loadingGrocery } = useStore(
+  const { items: groceryItems, setItems: setGroceryItems, addItem: addGroceryItem, updateItem: updateGroceryItem, deleteItem: deleteGroceryItem, loading: loadingGrocery } = useStore(
     'grocery_items', 'hive-grocery-items',
     { householdId }
   )
@@ -124,12 +124,15 @@ export default function Meals() {
         />
       )}
       {tab === 'recipes' && (
-        <RecipesTab recipes={recipes} setRecipes={setRecipes} />
+        <RecipesTab recipes={recipes} addRecipe={addRecipe} deleteRecipe={deleteRecipeItem} />
       )}
       {tab === 'grocery' && (
         <GroceryTab
           items={groceryItems}
           setItems={setGroceryItems}
+          addItem={addGroceryItem}
+          updateItem={updateGroceryItem}
+          deleteItem={deleteGroceryItem}
           mealPlans={mealPlans}
           recipes={recipes}
         />
@@ -292,7 +295,7 @@ function PlanTab({ mealPlans, setMealPlans, syncWeek, recipes }) {
 
 // ─── Recipes Tab ────────────────────────────────────────────
 
-function RecipesTab({ recipes, setRecipes }) {
+function RecipesTab({ recipes, addRecipe, deleteRecipe }) {
   const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [viewing, setViewing] = useState(null) // recipe id
@@ -317,7 +320,7 @@ function RecipesTab({ recipes, setRecipes }) {
     setShowForm(false)
   }
 
-  const saveRecipe = () => {
+  const saveRecipe = async () => {
     if (!form.name.trim()) return
     const recipe = {
       id: uid(),
@@ -329,12 +332,12 @@ function RecipesTab({ recipes, setRecipes }) {
       servings: Number(form.servings) || 0,
       tags: form.tags.split(',').map(s => s.trim()).filter(Boolean),
     }
-    setRecipes(prev => [...prev, recipe])
+    await addRecipe(recipe)
     resetForm()
   }
 
-  const deleteRecipe = (id) => {
-    setRecipes(prev => prev.filter(r => r.id !== id))
+  const handleDelete = (id) => {
+    deleteRecipe(id)
     if (viewing === id) setViewing(null)
   }
 
@@ -376,7 +379,7 @@ function RecipesTab({ recipes, setRecipes }) {
           <button
             className="btn btn-secondary"
             style={{ marginTop: 16 }}
-            onClick={() => deleteRecipe(viewedRecipe.id)}
+            onClick={() => handleDelete(viewedRecipe.id)}
           >
             <Trash2 size={14} /> Delete Recipe
           </button>
@@ -479,25 +482,27 @@ function RecipesTab({ recipes, setRecipes }) {
 
 // ─── Grocery Tab ────────────────────────────────────────────
 
-function GroceryTab({ items, setItems, mealPlans, recipes }) {
+function GroceryTab({ items, setItems, addItem: addStoreItem, updateItem: updateStoreItem, deleteItem: deleteStoreItem, mealPlans, recipes }) {
   const [newName, setNewName] = useState('')
   const [newCategory, setNewCategory] = useState('other')
 
-  const addItem = () => {
+  const handleAdd = async () => {
     if (!newName.trim()) return
-    setItems(prev => [
-      ...prev,
-      { id: uid(), name: newName.trim(), category: newCategory, checked: false, fromMealPlan: false },
-    ])
+    await addStoreItem({ id: uid(), name: newName.trim(), category: newCategory, checked: false, fromMealPlan: false })
     setNewName('')
   }
 
   const toggleItem = (id) => {
-    setItems(prev => prev.map(it => it.id === id ? { ...it, checked: !it.checked } : it))
+    const item = items.find(it => it.id === id)
+    if (item) updateStoreItem(id, { checked: !item.checked })
+  }
+
+  const handleDelete = (id) => {
+    deleteStoreItem(id)
   }
 
   const clearChecked = () => {
-    setItems(prev => prev.filter(it => !it.checked))
+    items.filter(it => it.checked).forEach(it => deleteStoreItem(it.id))
   }
 
   const generateFromPlan = () => {
@@ -568,14 +573,14 @@ function GroceryTab({ items, setItems, mealPlans, recipes }) {
           value={newName}
           onChange={e => setNewName(e.target.value)}
           placeholder="Add item..."
-          onKeyDown={e => e.key === 'Enter' && addItem()}
+          onKeyDown={e => e.key === 'Enter' && handleAdd()}
         />
         <select value={newCategory} onChange={e => setNewCategory(e.target.value)}>
           {CATEGORIES.map(c => (
             <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
           ))}
         </select>
-        <button className="btn btn-primary grocery-add-btn" onClick={addItem}>
+        <button className="btn btn-primary grocery-add-btn" onClick={handleAdd}>
           <Plus size={16} />
         </button>
       </div>
@@ -593,19 +598,20 @@ function GroceryTab({ items, setItems, mealPlans, recipes }) {
               <div key={cat} className="grocery-category">
                 <div className="grocery-category-label">{CATEGORY_LABELS[cat]}</div>
                 {grouped[cat].map(item => (
-                  <button
-                    key={item.id}
-                    className={`grocery-item ${item.checked ? 'checked' : ''}`}
-                    onClick={() => toggleItem(item.id)}
-                  >
-                    <span className="grocery-check">
-                      {item.checked && <Check size={14} />}
-                    </span>
-                    <span className="grocery-item-name">{item.name}</span>
-                    {item.fromMealPlan && (
-                      <span className="grocery-badge">plan</span>
-                    )}
-                  </button>
+                  <div key={item.id} className={`grocery-item ${item.checked ? 'checked' : ''}`}>
+                    <button className="grocery-item-toggle" onClick={() => toggleItem(item.id)}>
+                      <span className="grocery-check">
+                        {item.checked && <Check size={14} />}
+                      </span>
+                      <span className="grocery-item-name">{item.name}</span>
+                      {item.fromMealPlan && (
+                        <span className="grocery-badge">plan</span>
+                      )}
+                    </button>
+                    <button className="btn btn-ghost grocery-delete-btn" onClick={() => handleDelete(item.id)}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 ))}
               </div>
             )
