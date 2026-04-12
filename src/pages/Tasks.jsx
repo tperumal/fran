@@ -71,6 +71,7 @@ export default function Tasks() {
   const [newListIcon, setNewListIcon] = useState('📋')
   const [expandedTaskId, setExpandedTaskId] = useState(null)
   const [editDue, setEditDue] = useState('')
+  const [editTitle, setEditTitle] = useState('')
   const [editNotes, setEditNotes] = useState('')
   const [sortBy, setSortBy] = useState('newest')
   const [defaultsCreated, setDefaultsCreated] = useState(false)
@@ -177,6 +178,7 @@ export default function Tasks() {
       setExpandedTaskId(null)
     } else {
       setExpandedTaskId(task.id)
+      setEditTitle(task.title)
       const due = task.dueDate || task.due_date
       setEditDue(due ? due.split('T')[0] : '')
       setEditNotes(task.notes || task.description || '')
@@ -185,6 +187,7 @@ export default function Tasks() {
 
   async function handleSaveDetails(taskId) {
     await updateTask(taskId, {
+      title: editTitle.trim() || 'Untitled',
       dueDate: editDue ? new Date(editDue + 'T00:00:00').toISOString() : null,
       due_date: editDue ? new Date(editDue + 'T00:00:00').toISOString() : null,
       notes: editNotes,
@@ -311,6 +314,10 @@ export default function Tasks() {
 
               {isExpanded && (
                 <div className="tasks-item-details">
+                  <div className="tasks-detail-field">
+                    <label className="tasks-detail-label">Title</label>
+                    <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="tasks-detail-input" />
+                  </div>
                   <div className="tasks-detail-field">
                     <label className="tasks-detail-label">Due date</label>
                     <input type="date" value={editDue} onChange={(e) => setEditDue(e.target.value)} className="tasks-detail-input" />

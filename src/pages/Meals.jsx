@@ -9,6 +9,7 @@ import {
   ShoppingCart,
   Plus,
   Trash2,
+  Pencil,
   Clock,
   Users,
   ChevronLeft,
@@ -343,52 +344,101 @@ function RecipesTab({ recipes, addRecipe, updateRecipe, deleteRecipe, householdI
   }
 
   // Detail view
+  const [editingRecipe, setEditingRecipe] = useState(false)
+  const [recipeForm, setRecipeForm] = useState({})
+
+  const startEditRecipe = () => {
+    setRecipeForm({
+      name: viewedRecipe.name,
+      ingredients: (viewedRecipe.ingredients || []).join('\n'),
+      instructions: viewedRecipe.instructions || '',
+      prepTime: viewedRecipe.prepTime || '',
+      cookTime: viewedRecipe.cookTime || '',
+      servings: viewedRecipe.servings || '',
+      tags: (viewedRecipe.tags || []).join(', '),
+    })
+    setEditingRecipe(true)
+  }
+
+  const saveEditRecipe = async () => {
+    await updateRecipe(viewedRecipe.id, {
+      name: recipeForm.name.trim(),
+      ingredients: recipeForm.ingredients.split('\n').map(s => s.trim()).filter(Boolean),
+      instructions: recipeForm.instructions.trim() || null,
+      prep_time_min: Number(recipeForm.prepTime) || null,
+      cook_time_min: Number(recipeForm.cookTime) || null,
+      servings: Number(recipeForm.servings) || null,
+      tags: recipeForm.tags.split(',').map(s => s.trim()).filter(Boolean),
+    })
+    setEditingRecipe(false)
+  }
+
   if (viewedRecipe) {
     return (
       <div className="meals-section">
-        <button className="btn btn-ghost" onClick={() => setViewing(null)}>
+        <button className="btn btn-ghost" onClick={() => { setViewing(null); setEditingRecipe(false) }}>
           <ChevronLeft size={16} /> Back
         </button>
         <div className="card recipe-detail">
-          <h3>{viewedRecipe.name}</h3>
-          <div className="recipe-meta">
-            {viewedRecipe.prepTime > 0 && (
-              <span><Clock size={14} /> Prep: {viewedRecipe.prepTime}m</span>
-            )}
-            {viewedRecipe.cookTime > 0 && (
-              <span><Clock size={14} /> Cook: {viewedRecipe.cookTime}m</span>
-            )}
-            {viewedRecipe.servings > 0 && (
-              <span><Users size={14} /> Serves {viewedRecipe.servings}</span>
-            )}
-          </div>
-          {viewedRecipe.tags.length > 0 && (
-            <div className="recipe-tags">
-              {viewedRecipe.tags.map(t => <span key={t} className="tag">{t}</span>)}
+          {editingRecipe ? (
+            <div className="recipe-form">
+              <input placeholder="Recipe name" value={recipeForm.name} onChange={e => setRecipeForm(f => ({ ...f, name: e.target.value }))} />
+              <label className="tasks-detail-label">Ingredients (one per line)</label>
+              <textarea value={recipeForm.ingredients} onChange={e => setRecipeForm(f => ({ ...f, ingredients: e.target.value }))} rows={6} placeholder="1 cup flour&#10;2 eggs&#10;..." />
+              <label className="tasks-detail-label">Instructions</label>
+              <textarea value={recipeForm.instructions} onChange={e => setRecipeForm(f => ({ ...f, instructions: e.target.value }))} rows={4} placeholder="Steps..." />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input placeholder="Prep (min)" type="number" value={recipeForm.prepTime} onChange={e => setRecipeForm(f => ({ ...f, prepTime: e.target.value }))} />
+                <input placeholder="Cook (min)" type="number" value={recipeForm.cookTime} onChange={e => setRecipeForm(f => ({ ...f, cookTime: e.target.value }))} />
+                <input placeholder="Servings" type="number" value={recipeForm.servings} onChange={e => setRecipeForm(f => ({ ...f, servings: e.target.value }))} />
+              </div>
+              <input placeholder="Tags (comma separated)" value={recipeForm.tags} onChange={e => setRecipeForm(f => ({ ...f, tags: e.target.value }))} />
+              <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                <button className="btn btn-primary" onClick={saveEditRecipe}>Save</button>
+                <button className="btn btn-ghost" onClick={() => setEditingRecipe(false)}>Cancel</button>
+              </div>
             </div>
-          )}
-          <h4>Ingredients</h4>
-          <ul className="ingredient-list">
-            {viewedRecipe.ingredients.map((ing, i) => <li key={i}>{ing}</li>)}
-          </ul>
-          {viewedRecipe.instructions && (
+          ) : (
             <>
-              <h4>Instructions</h4>
-              <p className="recipe-instructions">{viewedRecipe.instructions}</p>
+              <h3>{viewedRecipe.name}</h3>
+              <div className="recipe-meta">
+                {viewedRecipe.prepTime > 0 && <span><Clock size={14} /> Prep: {viewedRecipe.prepTime}m</span>}
+                {viewedRecipe.cookTime > 0 && <span><Clock size={14} /> Cook: {viewedRecipe.cookTime}m</span>}
+                {viewedRecipe.servings > 0 && <span><Users size={14} /> Serves {viewedRecipe.servings}</span>}
+              </div>
+              {viewedRecipe.tags?.length > 0 && (
+                <div className="recipe-tags">
+                  {viewedRecipe.tags.map(t => <span key={t} className="tag">{t}</span>)}
+                </div>
+              )}
+              {viewedRecipe.ingredients?.length > 0 && (
+                <>
+                  <h4>Ingredients</h4>
+                  <ul className="ingredient-list">
+                    {viewedRecipe.ingredients.map((ing, i) => <li key={i}>{ing}</li>)}
+                  </ul>
+                </>
+              )}
+              {viewedRecipe.instructions && (
+                <>
+                  <h4>Instructions</h4>
+                  <p className="recipe-instructions">{viewedRecipe.instructions}</p>
+                </>
+              )}
+              <div style={{ marginTop: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
+                <ShareToggle
+                  shared={!!viewedRecipe.household_id}
+                  onToggle={(share) => updateRecipe(viewedRecipe.id, { household_id: share ? householdId : null })}
+                />
+                <button className="btn btn-secondary" onClick={startEditRecipe}>
+                  <Pencil size={14} /> Edit
+                </button>
+                <button className="btn btn-secondary" onClick={() => handleDelete(viewedRecipe.id)}>
+                  <Trash2 size={14} /> Delete
+                </button>
+              </div>
             </>
           )}
-          <div style={{ marginTop: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
-            <ShareToggle
-              shared={!!viewedRecipe.household_id}
-              onToggle={(share) => updateRecipe(viewedRecipe.id, { household_id: share ? householdId : null })}
-            />
-            <button
-              className="btn btn-secondary"
-              onClick={() => handleDelete(viewedRecipe.id)}
-            >
-              <Trash2 size={14} /> Delete Recipe
-            </button>
-          </div>
         </div>
       </div>
     )
