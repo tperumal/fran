@@ -616,9 +616,6 @@ function GroceryTab({ items, setItems, addItem: addStoreItem, updateItem: update
   return (
     <div className="meals-section">
       <div className="grocery-actions">
-        <button className="btn btn-secondary" onClick={generateFromPlan}>
-          <Sparkles size={14} /> Generate from Plan
-        </button>
         {checkedCount > 0 && (
           <button className="btn btn-ghost" onClick={clearChecked}>
             <Trash2 size={14} /> Clear {checkedCount} checked
