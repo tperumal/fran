@@ -239,41 +239,44 @@
 
 .dash-widgets {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
-  margin-top: 20px;
-  margin-bottom: 12px;
+  margin-top: 12px;
+  margin-bottom: 4px;
 }
 
 .dash-widget {
-  padding: 14px;
+  flex: 1;
+  padding: 10px;
 }
 
-.dash-widget-label {
-  font-size: 0.65rem;
-  font-weight: 700;
+.dash-widget-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.6rem;
+  font-weight: 800;
   font-family: var(--font-mono);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-dim);
-  margin-bottom: 10px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  margin-bottom: 8px;
 }
 
 /* Mood Widget */
 
 .dash-mood-picker {
   display: flex;
-  gap: 4px;
-  margin-bottom: 10px;
+  gap: 2px;
 }
 
 .dash-mood-btn {
   flex: 1;
-  height: 44px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   background: var(--bg);
   border: 2px solid var(--border-light);
   cursor: pointer;
@@ -290,6 +293,79 @@
   border-color: var(--text);
   background: var(--text);
   box-shadow: inset 0 0 0 2px var(--bg);
+}
+
+.dash-mood-partner {
+  margin-top: 6px;
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Weather Widget */
+
+.dash-weather-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+}
+
+.dash-weather-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dash-weather-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash-weather-emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.dash-weather-temp {
+  font-size: 1.3rem;
+  font-weight: 900;
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+}
+
+.dash-weather-range {
+  display: flex;
+  gap: 8px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.dash-weather-retry {
+  font-size: 0.6rem;
+  padding: 4px 10px;
+}
+
+/* ---- Expanded Widget ---- */
+
+.dash-expanded {
+  margin-top: 8px;
+  padding: 14px;
+  cursor: pointer;
+}
+
+.dash-mood-picker--expanded {
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.dash-mood-picker--expanded .dash-mood-btn {
+  height: 44px;
+  font-size: 1.4rem;
 }
 
 .dash-mood-status {
@@ -341,39 +417,10 @@
   font-family: var(--font-mono);
 }
 
-/* Weather Widget */
-
-.dash-weather-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-height: 60px;
-}
-
 .dash-weather-detail {
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-
-.dash-weather-main {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.dash-weather-emoji {
-  font-size: 2rem;
-  line-height: 1;
-}
-
-.dash-weather-temp {
-  font-size: 1.5rem;
-  font-weight: 900;
-  font-family: var(--font-mono);
-  letter-spacing: -0.02em;
 }
 
 .dash-weather-desc {
@@ -400,25 +447,7 @@
   color: var(--text-muted);
 }
 
-.dash-weather-retry {
-  margin-top: 8px;
-  font-size: 0.7rem;
-  padding: 6px 14px;
-}
-
 @media (min-width: 768px) {
-  .dash-widgets {
-    flex-direction: row;
-  }
-
-  .dash-mood {
-    flex: 2;
-  }
-
-  .dash-weather {
-    flex: 1;
-  }
-
   .dash-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;

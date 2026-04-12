@@ -125,6 +125,7 @@ export default function Dashboard() {
   const [visible, setVisible] = useState(loadVisible)
   const [editing, setEditing] = useState(false)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('fran-dash-tab') || 'Daily')
+  const [expandedWidget, setExpandedWidget] = useState(null)
 
   useEffect(() => { saveVisible(visible) }, [visible])
   useEffect(() => { localStorage.setItem('fran-dash-tab', activeTab) }, [activeTab])
@@ -236,60 +237,95 @@ export default function Dashboard() {
       {/* Mood + Weather Widgets */}
       {(isVis('mood') || isVis('weather')) && (
         <div className="dash-widgets">
-          {isVis('mood') && (
-            <div className="card dash-widget dash-mood">
-              <div className="dash-card-header"><Heart size={18} /><span>Mood</span></div>
+          {isVis('mood') && expandedWidget !== 'mood' && (
+            <div className="card dash-widget dash-mood" onClick={() => setExpandedWidget('mood')}>
+              <div className="dash-widget-title"><Heart size={14} /><span>Mood</span><ChevronRight size={14} className="dash-chevron" /></div>
               <div className="dash-mood-picker">
                 {MOODS.map(m => (
-                  <button key={m.emoji} className={`dash-mood-btn ${myMood?.mood === m.emoji ? 'active' : ''}`} onClick={() => logMood(m.emoji)} title={m.label}>
+                  <button key={m.emoji} className={`dash-mood-btn ${myMood?.mood === m.emoji ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); logMood(m.emoji) }} title={m.label}>
                     {m.emoji}
                   </button>
                 ))}
               </div>
-              {partnerMoods.map(pm => (
-                <div key={pm.profile_id} className="dash-mood-status">
-                  <span>{pm.displayName.toUpperCase()}: {pm.mood}</span>
-                  <span className="text-muted"> &mdash; {formatDistanceToNowStrict(new Date(pm.created_at), { addSuffix: false }).toUpperCase()} AGO</span>
+              {partnerMoods.length > 0 && (
+                <div className="dash-mood-partner">
+                  {partnerMoods[0].mood} <span className="text-muted">{partnerMoods[0].displayName}</span>
                 </div>
-              ))}
-              <div className="dash-mood-history">
-                {historyStrip.map((m, i) => (
-                  <div key={i} className="dash-mood-day">
-                    <span className="dash-mood-day-label">{stripLabels[i]}</span>
-                    <span className={`dash-mood-day-val ${m ? '' : 'empty'}`}>{m || '\u00B7'}</span>
-                  </div>
-                ))}
-              </div>
+              )}
             </div>
           )}
 
-          {isVis('weather') && (
-            <div className="card dash-widget dash-weather">
-              <div className="dash-card-header"><CloudSun size={18} /><span>Weather</span></div>
+          {isVis('weather') && expandedWidget !== 'weather' && (
+            <div className="card dash-widget dash-weather" onClick={() => setExpandedWidget('weather')}>
+              <div className="dash-widget-title"><CloudSun size={14} /><span>Weather</span><ChevronRight size={14} className="dash-chevron" /></div>
               {weatherLoading ? (
-                <div className="dash-weather-body"><span className="text-muted">LOADING...</span></div>
+                <div className="dash-weather-body"><span className="text-muted">...</span></div>
               ) : weatherError ? (
-                <div className="dash-weather-body">
-                  <span className="text-muted">LOCATION NEEDED</span>
-                  <button className="btn btn-secondary dash-weather-retry" onClick={retryWeather}>RETRY</button>
-                </div>
+                <button className="btn btn-secondary dash-weather-retry" onClick={(e) => { e.stopPropagation(); retryWeather() }}>ENABLE</button>
               ) : weather ? (
-                <div className="dash-weather-detail">
+                <div className="dash-weather-compact">
                   <div className="dash-weather-main">
                     <span className="dash-weather-emoji">{weatherCodeToEmoji(weather.code).emoji}</span>
-                    <span className="dash-weather-temp">{weather.temp}&deg;F</span>
+                    <span className="dash-weather-temp">{weather.temp}&deg;</span>
                   </div>
-                  <div className="dash-weather-desc">{weatherCodeToEmoji(weather.code).label}</div>
-                  <div className="dash-weather-stats">
-                    {weather.high != null && <span>H: {weather.high}&deg;</span>}
-                    {weather.low != null && <span>L: {weather.low}&deg;</span>}
-                    <span>HUMIDITY: {weather.humidity}%</span>
-                    <span>WIND: {weather.wind} MPH</span>
+                  <div className="dash-weather-range">
+                    {weather.high != null && <span>H:{weather.high}&deg;</span>}
+                    {weather.low != null && <span>L:{weather.low}&deg;</span>}
                   </div>
                 </div>
               ) : null}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Expanded Mood */}
+      {expandedWidget === 'mood' && (
+        <div className="card dash-expanded" onClick={() => setExpandedWidget(null)}>
+          <div className="dash-card-header"><Heart size={18} /><span>Mood</span><X size={16} className="dash-chevron" /></div>
+          <div className="dash-mood-picker dash-mood-picker--expanded">
+            {MOODS.map(m => (
+              <button key={m.emoji} className={`dash-mood-btn ${myMood?.mood === m.emoji ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); logMood(m.emoji) }} title={m.label}>
+                {m.emoji}
+              </button>
+            ))}
+          </div>
+          {partnerMoods.map(pm => (
+            <div key={pm.profile_id} className="dash-mood-status">
+              <span>{pm.displayName.toUpperCase()}: {pm.mood}</span>
+              <span className="text-muted"> &mdash; {formatDistanceToNowStrict(new Date(pm.created_at), { addSuffix: false }).toUpperCase()} AGO</span>
+            </div>
+          ))}
+          <div className="dash-mood-history">
+            {historyStrip.map((m, i) => (
+              <div key={i} className="dash-mood-day">
+                <span className="dash-mood-day-label">{stripLabels[i]}</span>
+                <span className={`dash-mood-day-val ${m ? '' : 'empty'}`}>{m || '\u00B7'}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Expanded Weather */}
+      {expandedWidget === 'weather' && (
+        <div className="card dash-expanded" onClick={() => setExpandedWidget(null)}>
+          <div className="dash-card-header"><CloudSun size={18} /><span>Weather</span><X size={16} className="dash-chevron" /></div>
+          {weather ? (
+            <div className="dash-weather-detail">
+              <div className="dash-weather-main">
+                <span className="dash-weather-emoji" style={{ fontSize: '2rem' }}>{weatherCodeToEmoji(weather.code).emoji}</span>
+                <span className="dash-weather-temp" style={{ fontSize: '1.5rem' }}>{weather.temp}&deg;F</span>
+              </div>
+              <div className="dash-weather-desc">{weatherCodeToEmoji(weather.code).label}</div>
+              <div className="dash-weather-stats">
+                {weather.high != null && <span>H: {weather.high}&deg;</span>}
+                {weather.low != null && <span>L: {weather.low}&deg;</span>}
+                <span>HUMIDITY: {weather.humidity}%</span>
+                <span>WIND: {weather.wind} MPH</span>
+              </div>
+            </div>
+          ) : <p className="text-muted">No weather data</p>}
         </div>
       )}
 
