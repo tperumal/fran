@@ -155,6 +155,45 @@
   color: var(--bg);
 }
 
+/* ---- Tab Bar ---- */
+
+.dash-tabs {
+  display: flex;
+  gap: 0;
+  margin-top: 16px;
+  border: 2px solid var(--text);
+}
+
+.dash-tab {
+  flex: 1;
+  padding: 10px 0;
+  background: var(--bg);
+  border: none;
+  border-right: 2px solid var(--text);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.dash-tab:last-child {
+  border-right: none;
+}
+
+.dash-tab:hover {
+  color: var(--text);
+  background: var(--bg-muted);
+}
+
+.dash-tab--active {
+  background: var(--text);
+  color: var(--bg);
+}
+
 /* ---- Edit Card ---- */
 
 .dash-edit-card {

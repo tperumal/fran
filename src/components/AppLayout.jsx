@@ -1,7 +1,6 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import {
-  LayoutDashboard,
   Dumbbell,
   UtensilsCrossed,
   CheckSquare,
@@ -23,17 +22,18 @@ import { processVoiceInput } from '../lib/ai'
 import supabase from '../lib/supabase'
 
 const ALL_NAV_ITEMS = [
-  { id: 'dashboard', to: '/', label: 'Home', icon: LayoutDashboard },
-  { id: 'tasks', to: '/tasks', label: 'Tasks', icon: CheckSquare },
-  { id: 'fitness', to: '/fitness', label: 'Fitness', icon: Dumbbell },
-  { id: 'meals', to: '/meals', label: 'Meals', icon: UtensilsCrossed },
-  { id: 'career', to: '/career', label: 'Career', icon: Briefcase },
-  { id: 'money', to: '/money', label: 'Money', icon: Wallet },
-  { id: 'hobbies', to: '/hobbies', label: 'Hobbies', icon: Gamepad2 },
-  { id: 'weekend', to: '/weekend', label: 'Weekend', icon: Sun },
-  { id: 'goals', to: '/goals', label: 'Goals', icon: Target },
-  { id: 'week', to: '/week', label: 'Week', icon: CalendarDays },
+  { id: 'tasks', to: '/tasks', label: 'Tasks', icon: CheckSquare, group: 'Daily' },
+  { id: 'week', to: '/week', label: 'Week', icon: CalendarDays, group: 'Daily' },
+  { id: 'meals', to: '/meals', label: 'Meals', icon: UtensilsCrossed, group: 'Daily' },
+  { id: 'fitness', to: '/fitness', label: 'Fitness', icon: Dumbbell, group: 'Growth' },
+  { id: 'career', to: '/career', label: 'Career', icon: Briefcase, group: 'Growth' },
+  { id: 'goals', to: '/goals', label: 'Goals', icon: Target, group: 'Growth' },
+  { id: 'money', to: '/money', label: 'Money', icon: Wallet, group: 'Life' },
+  { id: 'hobbies', to: '/hobbies', label: 'Hobbies', icon: Gamepad2, group: 'Life' },
+  { id: 'weekend', to: '/weekend', label: 'Weekend', icon: Sun, group: 'Life' },
 ]
+
+const MODULE_GROUPS = ['Daily', 'Growth', 'Life']
 
 const DEFAULT_PINNED = ['tasks', 'fitness', 'meals', 'career']
 const NAV_KEY = 'hive-nav-pinned'
@@ -304,28 +304,33 @@ export default function AppLayout({ children }) {
 
             {!editing ? (
               <div>
-                <div className="more-grid">
-                  {ALL_NAV_ITEMS.map(item => {
-                    const Icon = item.icon
-                    const isActive = item.to === '/'
-                      ? location.pathname === '/'
-                      : location.pathname.startsWith(item.to)
-                    const isPinned = pinnedIds.includes(item.id)
-                    return (
-                      <button
-                        key={item.id}
-                        className={`more-grid-item ${isActive ? 'more-grid-item--active' : ''}`}
-                        onClick={() => handleNavFromMore(item.to)}
-                      >
-                        <div className="more-grid-icon">
-                          <Icon size={22} />
-                        </div>
-                        <span className="more-grid-label">{item.label}</span>
-                        {isPinned && <span className="more-pinned-dot" />}
-                      </button>
-                    )
-                  })}
-                </div>
+                {MODULE_GROUPS.map(group => (
+                  <div key={group} className="more-group">
+                    <span className="more-group-label">{group}</span>
+                    <div className="more-grid">
+                      {ALL_NAV_ITEMS.filter(item => item.group === group).map(item => {
+                        const Icon = item.icon
+                        const isActive = item.to === '/'
+                          ? location.pathname === '/'
+                          : location.pathname.startsWith(item.to)
+                        const isPinned = pinnedIds.includes(item.id)
+                        return (
+                          <button
+                            key={item.id}
+                            className={`more-grid-item ${isActive ? 'more-grid-item--active' : ''}`}
+                            onClick={() => handleNavFromMore(item.to)}
+                          >
+                            <div className="more-grid-icon">
+                              <Icon size={22} />
+                            </div>
+                            <span className="more-grid-label">{item.label}</span>
+                            {isPinned && <span className="more-pinned-dot" />}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
                 <div className="more-footer">
                   <button className="more-footer-link" onClick={() => handleNavFromMore('/settings')}>
                     <Settings size={16} /> SETTINGS

@@ -439,6 +439,21 @@ input::placeholder, textarea::placeholder {
 
 /* Browse grid */
 
+.more-group {
+  margin-bottom: 16px;
+}
+
+.more-group-label {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
 .more-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

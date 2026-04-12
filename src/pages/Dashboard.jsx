@@ -124,8 +124,10 @@ export default function Dashboard() {
   const { mealPlans } = useMealPlans()
   const [visible, setVisible] = useState(loadVisible)
   const [editing, setEditing] = useState(false)
+  const [activeTab, setActiveTab] = useState(() => localStorage.getItem('fran-dash-tab') || 'Daily')
 
   useEffect(() => { saveVisible(visible) }, [visible])
+  useEffect(() => { localStorage.setItem('fran-dash-tab', activeTab) }, [activeTab])
 
   const today = new Date()
   const dayKey = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][today.getDay()]
@@ -179,6 +181,14 @@ export default function Dashboard() {
     meals: 'MEALS', career: 'CAREER', money: 'MONEY', hobbies: 'HOBBIES', weekend: 'WEEKEND', goals: 'GOALS', week: 'WEEK',
   }
 
+  const TAB_MODULES = {
+    Daily: ['tasks', 'week', 'meals'],
+    Growth: ['fitness', 'career', 'goals'],
+    Life: ['money', 'hobbies', 'weekend'],
+  }
+  const TABS = ['Daily', 'Growth', 'Life']
+  const visibleModules = TAB_MODULES[activeTab] || []
+
   return (
     <div className="page">
       <div className="dash-title-row">
@@ -209,6 +219,19 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Tab Bar */}
+      <div className="dash-tabs">
+        {TABS.map(tab => (
+          <button
+            key={tab}
+            className={`dash-tab ${activeTab === tab ? 'dash-tab--active' : ''}`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
 
       {/* Mood + Weather Widgets */}
       {(isVis('mood') || isVis('weather')) && (
@@ -271,7 +294,7 @@ export default function Dashboard() {
       )}
 
       <div className="dash-grid">
-        {isVis('tasks') && (
+        {visibleModules.includes('tasks') && isVis('tasks') && (
           <div className="card dash-card" onClick={() => navigate('/tasks')}>
             <div className="dash-card-header"><CheckSquare size={18} /><span>Tasks</span><ChevronRight size={16} className="dash-chevron" /></div>
             {pendingTasks.length > 0 ? (
@@ -287,7 +310,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {isVis('fitness') && (
+        {visibleModules.includes('fitness') && isVis('fitness') && (
           <div className="card dash-card" onClick={() => navigate('/fitness')}>
             <div className="dash-card-header"><Dumbbell size={18} /><span>Fitness</span><ChevronRight size={16} className="dash-chevron" /></div>
             {lastWorkout ? (
@@ -299,7 +322,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {isVis('meals') && (
+        {visibleModules.includes('meals') && isVis('meals') && (
           <div className="card dash-card" onClick={() => navigate('/meals')}>
             <div className="dash-card-header"><UtensilsCrossed size={18} /><span>Meals</span><ChevronRight size={16} className="dash-chevron" /></div>
             {hasMeals ? (
@@ -313,7 +336,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {isVis('career') && (
+        {visibleModules.includes('career') && isVis('career') && (
           <div className="card dash-card" onClick={() => navigate('/career')}>
             <div className="dash-card-header"><Briefcase size={18} /><span>Career</span><ChevronRight size={16} className="dash-chevron" /></div>
             {activeGoals.length > 0 ? (
@@ -324,7 +347,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {isVis('money') && (
+        {visibleModules.includes('money') && isVis('money') && (
           <div className="card dash-card" onClick={() => navigate('/money')}>
             <div className="dash-card-header"><Wallet size={18} /><span>Money</span><ChevronRight size={16} className="dash-chevron" /></div>
             {upcomingBills.length > 0 ? (
@@ -335,7 +358,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {isVis('hobbies') && (
+        {visibleModules.includes('hobbies') && isVis('hobbies') && (
           <div className="card dash-card" onClick={() => navigate('/hobbies')}>
             <div className="dash-card-header"><Gamepad2 size={18} /><span>Hobbies</span><ChevronRight size={16} className="dash-chevron" /></div>
             {currentMedia.length > 0 ? (
@@ -344,7 +367,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {isVis('weekend') && (
+        {visibleModules.includes('weekend') && isVis('weekend') && (
           <div className="card dash-card" onClick={() => navigate('/weekend')}>
             <div className="dash-card-header"><Sun size={18} /><span>Weekend</span><ChevronRight size={16} className="dash-chevron" /></div>
             {weekendPlans.length > 0 ? (
@@ -353,7 +376,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {isVis('goals') && (
+        {visibleModules.includes('goals') && isVis('goals') && (
           <div className="card dash-card" onClick={() => navigate('/goals')}>
             <div className="dash-card-header"><Target size={18} /><span>Goals</span><ChevronRight size={16} className="dash-chevron" /></div>
             {goals.length > 0 ? (
@@ -368,7 +391,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {isVis('week') && (
+        {visibleModules.includes('week') && isVis('week') && (
           <div className="card dash-card" onClick={() => navigate('/week')}>
             <div className="dash-card-header"><CalendarDays size={18} /><span>Week</span><ChevronRight size={16} className="dash-chevron" /></div>
             {todayEvents.length > 0 ? (
