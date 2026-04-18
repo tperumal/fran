@@ -20,6 +20,8 @@ import useAuth from '../hooks/useAuth'
 import useHousehold from '../hooks/useHousehold'
 import { processVoiceInput } from '../lib/ai'
 import supabase from '../lib/supabase'
+import MindDumpSheet from './MindDumpSheet'
+import applyActions from '../lib/applyActions'
 
 const ALL_NAV_ITEMS = [
   { id: 'tasks', to: '/tasks', label: 'Tasks', icon: CheckSquare, group: 'Daily' },
@@ -64,6 +66,7 @@ export default function AppLayout({ children }) {
   const [editing, setEditing] = useState(false)
   const [toast, setToast] = useState(null)
   const [processing, setProcessing] = useState(false)
+  const [mindDumpOpen, setMindDumpOpen] = useState(false)
   const sheetRef = useRef(null)
   const toastTimer = useRef(null)
 
@@ -237,6 +240,23 @@ export default function AppLayout({ children }) {
     else startListening()
   }
 
+  async function handleMindDumpApply(selectedActions) {
+    if (!supabase || !user) {
+      showToast('Sign in to save actions.')
+      return
+    }
+    const { applied, failed } = await applyActions(selectedActions, {
+      supabase,
+      user,
+      householdId,
+    })
+    if (failed.length === 0) {
+      showToast(`Applied ${applied.length} action${applied.length === 1 ? '' : 's'}`)
+    } else {
+      showToast(`Applied ${applied.length}, ${failed.length} failed`)
+    }
+  }
+
   const pinnedItems = pinnedIds
     .map(id => ALL_NAV_ITEMS.find(item => item.id === id))
     .filter(Boolean)
@@ -262,6 +282,13 @@ export default function AppLayout({ children }) {
         <div className="app-header-right">
           <button
             className="header-btn"
+            onClick={() => setMindDumpOpen(true)}
+            aria-label="Mind dump"
+          >
+            <Mic />
+          </button>
+          <button
+            className="header-btn"
             onClick={() => setShowMore(v => !v)}
             aria-label="All modules"
           >
@@ -278,6 +305,12 @@ export default function AppLayout({ children }) {
           <span>{toast}</span>
         </div>
       )}
+
+      <MindDumpSheet
+        isOpen={mindDumpOpen}
+        onClose={() => setMindDumpOpen(false)}
+        onApply={handleMindDumpApply}
+      />
 
       {/* More Sheet */}
       {showMore && (
