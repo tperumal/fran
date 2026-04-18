@@ -243,18 +243,19 @@ export default function AppLayout({ children }) {
   async function handleMindDumpApply(selectedActions) {
     if (!supabase || !user) {
       showToast('Sign in to save actions.')
-      return
+      return { applied: [], failed: [] }
     }
-    const { applied, failed } = await applyActions(selectedActions, {
+    const result = await applyActions(selectedActions, {
       supabase,
       user,
       householdId,
     })
-    if (failed.length === 0) {
-      showToast(`Applied ${applied.length} action${applied.length === 1 ? '' : 's'}`)
+    if (result.failed.length === 0) {
+      showToast(`Applied ${result.applied.length} action${result.applied.length === 1 ? '' : 's'}`)
     } else {
-      showToast(`Applied ${applied.length}, ${failed.length} failed`)
+      showToast(`Applied ${result.applied.length}, ${result.failed.length} failed`)
     }
+    return result
   }
 
   const pinnedItems = pinnedIds

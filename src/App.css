@@ -893,3 +893,27 @@ input::placeholder, textarea::placeholder {
   text-align: center;
   color: var(--text);
 }
+
+.mind-dump-action--failed {
+  border-color: #c00;
+  background: #fff5f5;
+  cursor: default;
+}
+
+.mind-dump-action--failed .mind-dump-action-icon {
+  border-color: #c00;
+  color: #c00;
+}
+
+.mind-dump-action--failed .mind-dump-action-label {
+  color: #c00;
+}
+
+.mind-dump-action-err {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: #c00;
+  margin-top: 4px;
+  word-break: break-word;
+  line-height: 1.3;
+}

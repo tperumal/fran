@@ -45,7 +45,7 @@ Action types and their fields:
 - add_bill: { name: string, amount: number, dueDay: number, frequency: "monthly" | "quarterly" | "yearly" }
 - add_goal: { title: string, parentTitle?: string }
 - add_milestone: { title: string, category: "promotion" | "achievement" | "goal" }
-- add_media: { title: string, mediaType: "book" | "movie" | "tv" | "game" | "podcast", status: "want" | "in_progress" | "done" }
+- add_media: { title: string, mediaType: "book" | "movie" | "tv_show" | "video_game" | "podcast", status: "want" | "in_progress" | "done" }
 
 Rules:
 - Output raw JSON only. No markdown fences, no prose.

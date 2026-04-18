@@ -29,12 +29,13 @@ const ACTION_META = {
 }
 
 export default function MindDumpSheet({ isOpen, onClose, onApply }) {
-  const [stage, setStage] = useState('input') // input | loading | review | applying
+  const [stage, setStage] = useState('input') // input | loading | review | applying | results
   const [text, setText] = useState('')
   const [summary, setSummary] = useState('')
   const [actions, setActions] = useState([])
   const [selected, setSelected] = useState(new Set())
   const [error, setError] = useState(null)
+  const [results, setResults] = useState(null) // { applied: [...], failed: [{action, error}] }
   const textareaRef = useRef(null)
   const sheetRef = useRef(null)
 
@@ -62,6 +63,7 @@ export default function MindDumpSheet({ isOpen, onClose, onApply }) {
     setActions([])
     setSelected(new Set())
     setError(null)
+    setResults(null)
   }
 
   function handleClose() {
@@ -115,8 +117,13 @@ export default function MindDumpSheet({ isOpen, onClose, onApply }) {
     if (toApply.length === 0) return
     setStage('applying')
     try {
-      await onApply(toApply)
-      handleClose()
+      const result = await onApply(toApply)
+      if (result?.failed?.length > 0) {
+        setResults(result)
+        setStage('results')
+      } else {
+        handleClose()
+      }
     } catch (err) {
       setError(err.message || 'Failed to apply some actions.')
       setStage('review')
@@ -218,6 +225,35 @@ export default function MindDumpSheet({ isOpen, onClose, onApply }) {
           <div className="mind-dump-loading">
             <Loader2 className="mind-dump-spinner" size={28} />
             <span>Applying…</span>
+          </div>
+        )}
+
+        {stage === 'results' && results && (
+          <div className="mind-dump-review-stage">
+            <p className="mind-dump-summary">
+              Applied {results.applied.length} of {results.applied.length + results.failed.length}.
+            </p>
+            <div className="mind-dump-actions-list">
+              {results.failed.map((f, i) => {
+                const meta = ACTION_META[f.action.type] || { icon: CheckSquare, label: f.action.type }
+                const Icon = meta.icon
+                return (
+                  <div key={i} className="mind-dump-action mind-dump-action--failed">
+                    <div className="mind-dump-action-icon">
+                      <Icon size={18} />
+                    </div>
+                    <div className="mind-dump-action-body">
+                      <span className="mind-dump-action-label">{meta.label} — FAILED</span>
+                      <span className="mind-dump-action-desc">{f.action.description}</span>
+                      <span className="mind-dump-action-err">{f.error}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <button className="btn btn-primary mind-dump-submit" onClick={handleClose}>
+              DISMISS
+            </button>
           </div>
         )}
       </div>
